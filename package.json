@@ -1,0 +1,15 @@
+{
+  "name": "chall-100",
+  "version": "1.0.0",
+  "description": "My 100 days of coding challenge.",
+  "main": "index.js",
+  "author": "Xvezda <xvezda@naver.com>",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "serve"
+  },
+  "dependencies": {
+    "serve": "^11.3.2"
+  }
+}
