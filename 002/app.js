@@ -146,6 +146,11 @@ class App {
 
     const endTime = Date.now()
     console.log('end:', endTime)
+
+    this.canvas.onclick = (event) => {
+      this.parent.removeChild(this.canvas)
+      this.onLoad()
+    }
   }
 
   // https://stackoverflow.com/a/17130415
