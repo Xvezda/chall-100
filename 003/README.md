@@ -1,6 +1,8 @@
 Day 3
 =====
 
+![Screen Shot](screenshot.png)
+
 Simple doodle app with pressure support.
 
 References
