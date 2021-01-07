@@ -31,7 +31,6 @@ class App {
     this.prevEvent = null
   }
 
-  // FIXME: Performance issue
   onPointerMove(event) {
     const getBrushSize = (pointerType, pressure) => {
       const defaultSize = this.options.brushSize
@@ -46,6 +45,7 @@ class App {
     const brushSize = getBrushSize(event.pointerType, event.pressure)
     const { x, y } = event
 
+    // TODO: Try non-linear interpolation
     const interpolation = ({ from, to, count = 10 }) => {
       const distance = to - from
       const step = distance / (count+1)
