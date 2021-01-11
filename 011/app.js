@@ -4,11 +4,13 @@ class App {
 
     this.options = {
       brushSize: 20,
+      maxHistories: 50,
       ...options
     }
     this.previousEvent = null
     this.histories = []
     this.historyStash = null
+    this.redoStack = []
 
     this.canvas = document.createElement('canvas')
     this.onResize()
@@ -29,6 +31,12 @@ class App {
   _saveHistory() {
     // Save canvas state when brush released
     const capture = this.canvas.toDataURL('image/png', 1.0)
+
+    // If histories which include stash over the max histories option
+    while (this.options.maxHistories <= this.histories.length - 1) {
+      this.histories.shift()
+    }
+
     if (this.historyStash) {
       this.histories.push(this.historyStash)
     }
@@ -45,27 +53,53 @@ class App {
       case 'z':
         // If keydown event is combination of shortcut
         if (event[`${shortcutKey.toLowerCase()}Key`]) {
-          console.debug('undo triggered!')
-
-          if (!this.histories.length) return
-          console.log(this.histories.length)
-
-          this.historyStash = null
-
-          const img = new Image()
-          img.onload = () => {
-            this.clearCanvas()
-            this.ctx.drawImage(img, 0, 0, img.width, img.height)
-
-            this._saveHistory()
+          if (event.shiftKey) {
+            this._redo()
+          } else {
+            this._undo()
           }
-          img.src = this.histories.pop()
         }
         break;
       default:
         console.debug('keypress:', event)
         break;
     }
+  }
+
+  _replaceCanvasWithImage(image) {
+    this.clearCanvas()
+    this.ctx.drawImage(image, 0, 0, image.width, image.height)
+
+    this._saveHistory()
+  }
+
+  async _replaceCanvasWithImageUrl(url) {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        this._replaceCanvasWithImage(img)
+        resolve()
+      }
+      img.onerror = reject
+      img.src = url
+    })
+  }
+
+  async _undo() {
+    // Pass if no history left
+    if (!this.histories.length) return
+
+    if (this.historyStash) {
+      this.redoStack.push(this.historyStash)
+    }
+    this.historyStash = null
+
+    const latestHistory = this.histories.pop()
+    await this._replaceCanvasWithImageUrl(latestHistory)
+  }
+
+  async _redo() {
+    await this._replaceCanvasWithImageUrl(this.redoStack.pop())
   }
 
   onPointerDown(event) {
@@ -81,10 +115,14 @@ class App {
     this.canvas.onpointermove = null
     this.previousEvent = null
 
+    if (this.redoStack.length) {
+      this.redoStack = []
+    }
     this._saveHistory()
   }
 
   onPointerMove(event) {
+    // FIXME: Brush grews to the top-left not the center of brush
     const getBrushSize = (pointerType, pressure) => {
       const defaultSize = this.options.brushSize
       switch (pointerType) {
