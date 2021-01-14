@@ -1,4 +1,4 @@
-The 100 days of coding challenge
+The 100 ~deadlines~ days of coding challenge
 ================================
 
 Rules
