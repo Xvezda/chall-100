@@ -2,6 +2,22 @@
 
 Script to convert output of column into markdown table format.
 
+## Sample
+
+| Name                          | Value | Start | Size |
+|-------------------------------|-------|-------|------|
+| char signature[8]             | %1TL= | 0h    | 8h   |
+| uint total count              | 2     | 8h    | 4h   |
+| uint name length              | 12    | Ch    | 4h   |
+| uint mask length              | 5     | 28h   | 4h   |
+| uint unknown                  | 1     | 36h   | 4h   |
+| uint filename length          | 29    | 3Ah   | 4h   |
+| uint run on load              | 1     | 78h   | 4h   |
+| uint show editor on load      | 0     | 7Ch   | 4h   |
+| uint offset                   | 260   | F4h   | 4h   |
+| uint file size                | 3260  | F8h   | 4h   |
+| char end of file signature[8] | %EOF  | 22EDh | 8h   |
+
 ## References
 
 * https://man7.org/linux/man-pages/man1/column.1.html
