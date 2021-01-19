@@ -1,0 +1,3 @@
+[submodule "019"]
+	path = 019
+	url = git@github.com:Xvezda/python-casetools.git
