@@ -1,3 +1,6 @@
 [submodule "019"]
 	path = 019
 	url = git@github.com:Xvezda/python-casetools.git
+[submodule "020"]
+	path = 020
+	url = git@github.com:Xvezda/010EditorListCompilers.git
