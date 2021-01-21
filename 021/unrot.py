@@ -85,29 +85,24 @@ if __name__ == '__main__':
     # Bruteforce
     memo = {}
     weights = {}
+    counters = {}
     iterations = len(lowercase)
-    regexp = r'\b([a-z]{2,})\b'
+    regexp = r'\b([A-Za-z]{2,})\b'
     for i in range(0, iterations):
         print('[*]', 'iteration:', i)
         guessed = translated(crypted, i)
         memo[i] = guessed
 
         founds = re.findall(regexp, guessed.lower())
-        deduped = set(founds)
-        valids = [word for word in deduped
+        valids = [word for word in founds
                   if is_valid(word, words)]
 
         occur_counter = CaselessCounter(valids)
+        print(occur_counter.most_common(3))
         weights[i] = sum(occur_counter.values())
+        counters[i] = occur_counter
+    print()
 
-    replaced_word = {}
-    def repl(match):
-        global replaced_word
-        word = match.group(1)
-        if replaced_word.get(word):
-            return match.group(0)
-        replaced_word.update({word: True})
-        return f'<{word}: {occur_counter[word.lower()]}>'
 
     minidx = min(weights, key=weights.get)
     maxidx = max(weights, key=weights.get)
@@ -116,18 +111,36 @@ if __name__ == '__main__':
         return sum(lst) / len(lst)
 
     average = avg(weights.values())
-    PICK_TOP = 3
-    for i, (k, v) in enumerate(sorted(weights.items(),
-                                      key=lambda x: x[1],
-                                      reverse=True)):
+    desc_weights = sorted(weights.items(),
+                          key=lambda x: x[1],
+                          reverse=True)
+    PICK_TOP = 1
+    for i, (k, v) in enumerate(desc_weights):
         if i+1 > PICK_TOP:
             break
+
+        if not v:
+            continue
+
         print('[+]', 'guessed:', f'ROT{k}')
-        print('[+]',
-              f'avg: {avg(weights.values())},',
-              f'min: {weights[minidx]},',
-              f'max: {weights[maxidx]}')
+        print('[+]', 'weight:', v)
+        print()
+
+        counter = counters[k]
+        replaced_word = {}
+        def repl(match):
+            word = match.group(1)
+            count = counter.get(word.lower())
+            if replaced_word.get(word) or not count:
+                return match.group(0)
+            replaced_word.update({word: True})
+            return f'<{word}: {count}>'
         replaced = re.sub(regexp, repl, memo.get(k))
         print(replaced)
+
+    print('[+]',
+          f'avg: {avg(weights.values()):.5f},',
+          f'min: {weights[minidx]},',
+          f'max: {weights[maxidx]}')
 
 
