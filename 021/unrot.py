@@ -41,7 +41,7 @@ def load_words():
     for path in word_paths:
         try:
             with open(path, 'r') as f:
-                return [line.strip().lower() for line in f.readlines()
+                return [line.strip().casefold() for line in f.readlines()
                         if not line.startswith('#')]
             break
         except OSError:
@@ -63,14 +63,14 @@ def is_valid(word, words):
     return flag
 
 
-class CaselessCounter(collections.Counter):
+class CasefoldCounter(collections.Counter):
     def __init__(self, iom=None, **kwds):
         lower_kwds = {}
         for k, v in kwds:
-            lower_kwds[k.lower()] = v
+            lower_kwds[k.casefold()] = v
         super().__init__(**lower_kwds)
         if iom:
-            self.update(map(lambda x: x.lower(), iom))
+            self.update(map(lambda x: x.casefold(), iom))
 
 
 if __name__ == '__main__':
@@ -93,11 +93,11 @@ if __name__ == '__main__':
         guessed = translated(crypted, i)
         memo[i] = guessed
 
-        founds = re.findall(regexp, guessed.lower())
+        founds = re.findall(regexp, guessed.casefold())
         valids = [word for word in founds
                   if is_valid(word, words)]
 
-        occur_counter = CaselessCounter(valids)
+        occur_counter = CasefoldCounter(valids)
         print(occur_counter.most_common(3))
         weights[i] = sum(occur_counter.values())
         counters[i] = occur_counter
@@ -130,7 +130,7 @@ if __name__ == '__main__':
         replaced_word = {}
         def repl(match):
             word = match.group(1)
-            count = counter.get(word.lower())
+            count = counter.get(word.casefold())
             if replaced_word.get(word) or not count:
                 return match.group(0)
             replaced_word.update({word: True})
