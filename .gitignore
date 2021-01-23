@@ -105,3 +105,6 @@ dist
 
 # Images
 **/*.*_original
+
+# Draft
+draft/
