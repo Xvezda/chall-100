@@ -17,8 +17,11 @@ function _open_web() {
 function _install_script() {
     local alias_name="$1"
     local script_path="$2"
-    git config alias.$1 "!f() { chmod +x $2; $2; }; f"
-    echo "script $2 installed at git alias.$1"
+
+    chmod +x $script_path
+    git config alias.$alias_name "!f() { $script_path; }; f"
+
+    echo "script $script_path installed at git alias.$alias_name"
 }
 
 
