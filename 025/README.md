@@ -1,5 +1,7 @@
 # Day 25
 
+![Screen Shot](./screenshot.png)
+
 Find python gadgets.
 
 ## References
