@@ -5,7 +5,7 @@ Add include statement feature to markdown.
 ## Usage
 
 ```sh
-./compile src/README.inc.md > README.md
+./compile.sh src/README.inc.md > README.md
 ```
 
 <!--#include "footer.inc.md"-->
