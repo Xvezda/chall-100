@@ -1,6 +1,6 @@
 # Day 28
 
-Add POST method suppor to [Day 27](../027) command line tool.
+Add POST method support to [Day 27](../027) command line tool.
 
 ## References
 
