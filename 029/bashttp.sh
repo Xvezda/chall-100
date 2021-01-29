@@ -23,45 +23,32 @@ function _usage() {
 }
 
 function _main() {
-    local args=$(getopt hH:Id: "$*")
-    if (( $? != 0 )); then
-        _usage
-        exit 1
-    fi
-    set -- $args
-    _dbg "\$@: $@"
     local headers=()
-    for i; do  # ``If `in WORDS ...;' is not present, then `in "$@"' is assumed.''
-        case "$i" in
-            -h)
-                shift
+    while getopts "hH:Id:" opt; do
+        case "$opt" in
+            h)
                 _usage
                 exit
                 break
                 ;;
-            -H)
-                headers+=("$2")
-                shift; shift
+            H)
+                headers+=("$OPTARG")
                 ;;
-            -I)
+            I)
                 _set_option headers_only 1
-                shift
                 ;;
-            -d)
+            d)
                 local method="POST"
-                local post_body="$2"
-                shift; shift
-                ;;
-            --)
-                shift
-                break
+                local post_body="$OPTARG"
                 ;;
         esac
     done
+    shift $(( OPTIND - 1 ))
     if [[ -z "$1" ]]; then
         _usage
         exit 1
     fi
+    _dbg "headers: ${headers[@]}"
     local url="$1"
     local res="$(_send_http "$url" "$method" "${headers[@]}" "$post_body")"
     if [[ -z "$(_get_option headers_only)" ]]; then

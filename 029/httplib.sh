@@ -36,7 +36,7 @@ function _send_http() {
     fi
     local headers=()
     if [[ -n $3 ]]; then
-        headers=("$3")
+        headers+=("$3")
     fi
     if [[ -n $4 ]]; then
         local body="$4"

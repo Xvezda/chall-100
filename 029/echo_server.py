@@ -14,7 +14,7 @@ class EchoHTTPRequestHandler(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'text/plain')
         for k, v in self.headers.items():
-            self.send_header('X-'+k, v)
+            self.send_header('X-Echo-'+k, v)
         self.end_headers()
         # Echo
         self.wfile.write(reqbody)
