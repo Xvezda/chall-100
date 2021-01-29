@@ -50,7 +50,7 @@ function _main() {
     fi
     _dbg "headers: ${headers[@]}"
     local url="$1"
-    local res="$(_send_http "$url" "$method" "${headers[@]}" "$post_body")"
+    local res="$(_send_http "$url" "$method" "$post_body" "${headers[@]}")"
     if [[ -z "$(_get_option headers_only)" ]]; then
         echo "${res#*$EOH}"
     else

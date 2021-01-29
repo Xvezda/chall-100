@@ -28,22 +28,29 @@ function _send_tcp() {
 }
 
 function _send_http() {
+    # _send_http(url, method='GET', post_body='', *headers)
     local url="$1"
     if [[ -n $2 ]]; then
         local method="$(echo "$2" | tr '[[:lower:]]' '[[:upper:]]')"
     else
         local method="GET"
     fi
-    local headers=()
-    if [[ -n $3 ]]; then
-        headers+=("$3")
-    fi
-    if [[ -n $4 ]]; then
-        local body="$4"
+    shift 2
+
+    if [[ $method == "POST" ]]; then
+        local body="$1"
         local body_len="${#body}"
     else
         local body=""
     fi
+    shift
+
+    local headers=()
+    while [[ "$1" =~ [[:alnum:]-]*':'.*  ]]; do
+        headers+=("$1")
+        shift
+    done
+
     if [[ "$url" != 'http://'* ]]; then
         _err "wrong http url '$url'"
         exit 1
@@ -58,6 +65,7 @@ function _send_http() {
     _dbg "host: $host"
     _dbg "hostname: $hostname"
     _dbg "port: $port"
+    _dbg "headers: ${headers[@]}"
 
     local request=''
     request+="$method / HTTP/1.0${CRLF}"
