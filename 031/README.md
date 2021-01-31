@@ -1,5 +1,7 @@
 # Day 31
 
+![Preview image](sample.gif)
+
 Add features to [Day 30](../030) grid based drawing app.
 
 ## References
