@@ -1,5 +1,7 @@
 # Day 32
 
+![Preview image](sample.gif)
+
 Meaningless game to practice [Python curses module](https://docs.python.org/3/library/curses.html), which just type any keys from keyboard for 100 times to finish.
 
 
