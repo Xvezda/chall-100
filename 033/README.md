@@ -1,5 +1,7 @@
 # Day 33
 
+![Preview image](sample.gif)
+
 Snake game built with [Python curses library](https://docs.python.org/3.9/library/curses.html).
 
 ## References
