@@ -63,7 +63,10 @@ def main(stdscr):
 
     box = Textbox(editwin)
     # Use validator as keystroke callback with side-effect
-    box.edit(outer(box))
+    try:
+        box.edit(outer(box))
+    except KeyboardInterrupt:
+        pass
 
 
 if __name__ == '__main__':
