@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "start": "serve",
-    "auto-commit": "./023/auto-commit.sh"
+    "auto-commit": "./scripts/auto-commit.sh"
   },
   "dependencies": {
     "serve": "^11.3.2"
