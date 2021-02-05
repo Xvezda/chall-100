@@ -1,5 +1,7 @@
 # Day 36
 
+![Preview image](sample.gif)
+
 Regular expression visualization tool.
 
 ## References
