@@ -1,5 +1,7 @@
 # Day 37
 
+![Preview image](sample.gif)
+
 Improvement of [Day 36](../036).
 
 ## References
