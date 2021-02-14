@@ -14,7 +14,7 @@ function context(ctx, exec, err) {
 
 // Virtual canvas button
 class CanvasButton {
-  constructor(canvas, text, x, y) {
+  constructor(canvas, text, x = 0, y = 0) {
     this.text = text
 
     this.x = x
