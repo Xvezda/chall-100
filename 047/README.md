@@ -1,5 +1,7 @@
 # Day 47
 
+![Preview image](sample.gif)
+
 Image mosaic filter with html canvas.
 
 ## References
