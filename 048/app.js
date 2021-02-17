@@ -23,28 +23,28 @@ class App {
     this.controlContainer.style.display = 'flex'
     this.controlContainer.style.columnGap = '50px'
 
-    this.fileinput = document.createElement('input')
-    this.fileinput.type = 'file'
-    this.fileinput.onchange = this.onFileChange.bind(this)
-    this.controlContainer.appendChild(this.fileinput)
+    this.fileInput = document.createElement('input')
+    this.fileInput.type = 'file'
+    this.fileInput.onchange = this.onFileChange.bind(this)
+    this.controlContainer.appendChild(this.fileInput)
 
-    this.rangeinput = document.createElement('input')
-    this.rangeinput.type = 'range'
-    this.rangeinput.min = 5
-    this.rangeinput.max = 100
-    this.rangeinput.value = 10
+    this.rangeInput = document.createElement('input')
+    this.rangeInput.type = 'range'
+    this.rangeInput.min = 1
+    this.rangeInput.max = 100
+    this.rangeInput.value = 1
 
-    this.controlContainer.appendChild(this.rangeinput)
+    this.controlContainer.appendChild(this.rangeInput)
 
     this.rangelabel = document.createElement('label')
     const updateLabel = (evt) => {
       this.rangelabel.textContent =
-        `value: ${evt?.target?.value ?? this.rangeinput.value}`
+        `value: ${evt?.target?.value ?? this.rangeInput.value}`
     }
-    this.rangeinput.oninput = updateLabel
+    this.rangeInput.oninput = updateLabel
     updateLabel()
 
-    this.rangeinput.addEventListener('input', this.onSliderMove.bind(this), false)
+    this.rangeInput.addEventListener('input', this.onSliderMove.bind(this), false)
 
     this.controlContainer.appendChild(this.rangelabel)
     this.container.appendChild(this.controlContainer)
@@ -70,6 +70,10 @@ class App {
     }, debounce)
   }
 
+  clear() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+  }
+
   drawImage() {
     const img = this.loadedImage
 
@@ -83,6 +87,10 @@ class App {
       this.canvas.width/2 - width/2,
       this.canvas.height/2 - height/2
     ].map(v => Math.floor(v))
+
+    const drawImageAtCenter = (img) => {
+      this.ctx.drawImage(img, imgX, imgY)
+    }
 
     const imageCanvas = document.createElement('canvas')
     imageCanvas.width = width
@@ -103,14 +111,21 @@ class App {
       let i = 0
       for (let y = 0; y < height; y += pixelSize) {
         for (let x = 0; x < width; x += pixelSize) {
-          mosaicContext.fillStyle = rgbs[i++]
+          const [r, g, b] = rgbs[i++]
+          mosaicContext.fillStyle = `rgb(${r}, ${g}, ${b})`
           mosaicContext.fillRect(x, y, pixelSize, pixelSize)
         }
       }
-      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-      this.ctx.drawImage(mosaicCanvas, imgX, imgY)
+      this.clear()
+      drawImageAtCenter(mosaicCanvas)
     }
-    const pixelSize = parseInt(this.rangeinput.value)
+    const pixelSize = parseInt(this.rangeInput.value)
+
+    if (pixelSize === 1) {
+      this.clear()
+      drawImageAtCenter(imageCanvas)
+      return
+    }
 
     this.worker.postMessage({
       imageData: imageContext.getImageData(0, 0, width, height),
