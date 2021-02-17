@@ -1,5 +1,7 @@
 # Day 48
 
+![Preview image](sample.gif)
+
 Improve image processing performance with Worker and optimization from [Day 47](../047).
 
 ## References
