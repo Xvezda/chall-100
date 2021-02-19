@@ -106,6 +106,8 @@ class CanvasElementStyle {
 // Virtual canvas button
 class CanvasButton {
   constructor(text, x = 0, y = 0) {
+    // TODO: Use dedicated canvas for element to pre-caculate styles.
+    // Also, separate mounting point (parent)
     this.canvas = null
 
     this.$isHover = false
