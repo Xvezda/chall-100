@@ -46,10 +46,10 @@ export default class CanvasElement extends AbstractCanvasElement {
     // Find method names by climbing through parent classes
     let methodNames = []
     let proto = Object.getPrototypeOf(this)
-    while (proto.constructor !== AbstractCanvasElement) {
+    do {
       methodNames = [...methodNames, ...Object.getOwnPropertyNames(proto)]
       proto = Object.getPrototypeOf(proto)
-    }
+    } while (proto.constructor !== AbstractCanvasElement)
 
     const handlerNames = methodNames.filter(name => {
       return name.startsWith(prefix) && Util.isUpperCase(name[prefixLength])
@@ -67,9 +67,6 @@ export default class CanvasElement extends AbstractCanvasElement {
   }
 
   draw() {
-    // TODO: Match context style to border
-    // this.style.border = `${this.ctx.lineWidth}px solid ${this.ctx.strokeStyle}`
-
     this.update()
     this.render()
   }
