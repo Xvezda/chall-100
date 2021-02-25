@@ -1,3 +1,55 @@
+export class CustomElement extends HTMLElement {
+  constructor() {
+    super()
+  }
+
+  update() {
+    try {
+      const shadow = this.attachShadow({mode: 'open'})
+
+      this.mounted = this.render()
+      shadow.append(...this.mounted)
+    } catch (e) {
+      const updated = this.render()
+
+      if (updated.length !== this.mounted.length) {
+        this.shadowRoot.innerHTML = ''
+        this.shadowRoot.append(...updated)
+        this.mounted = updated
+        return
+      }
+
+      Array.prototype.forEach.call(updated, (v, i) => {
+        this.shadowRoot.replaceChild(v, this.mounted[i])
+      })
+      this.mounted = updated
+    }
+  }
+
+  /* https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks */
+  connectedCallback() {
+    this.update()
+    this.dispatchEvent(new CustomEvent('connect'))
+  }
+
+  disconnectedCallback() {
+    this.dispatchEvent(new CustomEvent('disconnect'))
+  }
+
+  adoptedCallback() {
+    this.dispatchEvent(new CustomEvent('adopt'))
+  }
+
+  attributeChangedCallback(...args) {
+    this.dispatchEvent(new CustomEvent('attributechange', {
+      detail: {
+        ...args
+      }
+    }))
+  }
+}
+
+
 export function unique() {
   // TODO: Find better id generate mechanism
   return btoa(Math.random().toString().substring(2)).substring(0, 16)
@@ -59,7 +111,7 @@ export function stringify(arg) {
     const elementName = classToElementName(func)
     const ctor = (() => {
       if (!isElementSubClass(func)) {
-        return class extends HTMLElement {
+        return class extends CustomElement {
           constructor() {
             super()
             func.call(this)
@@ -145,34 +197,16 @@ export function html(strings, ...args) {
 
 
 export function chain(element) {
-  // FIXME: Issue with event dispatch - every elements get same event
-  /*
-  const proxyElement = new Proxy(element, {
-    get: (elm, prop) => {
-      console.debug('chained:', elm, prop)
-      const reflected = Reflect.get(elm, prop)
-      if (typeof reflected !== 'function') {
-        return reflected
-      }
-      return (...args) => {
-        const ret = reflected(...args)
-        if (ret === undefined) return elm
-        return ret
-      }
-    }
-  })
-  return proxyElement
-  */
-
   element.on = (...args) => {
     element.addEventListener(...args)
-    return element
+    return chain(element)
   }
   return element
 }
 
 
 export default {
+  CustomElement,
   unique,
   globalUnique,
   entity,

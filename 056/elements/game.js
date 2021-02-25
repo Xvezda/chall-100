@@ -3,17 +3,16 @@
  * https://ko.reactjs.org/tutorial/tutorial.html#what-are-we-building
  */
 
-import {html, chain} from '../util.js'
+import Util, {html} from '../util.js'
 
 
-class Square extends HTMLElement {
+class Square extends Util.CustomElement {
   constructor() {
     super()
 
     this.state = {
       value: this.getAttribute('value')
     }
-    this.render()
   }
 
   render() {
@@ -40,34 +39,22 @@ class Square extends HTMLElement {
       width: 34px;
     `
     console.debug('Square:', button)
-
-    try {
-      const shadow = this.attachShadow({mode: 'open'})
-      shadow.append(button)
-    } catch (e) {
-      this.shadowRoot.replaceChild(button, this.button)
-    } finally {
-      this.button = button
-    }
+    return [button]
   }
 
   onClick(event) {
     console.debug('onClick:', event, this)
-    // alert('click')
 
     this.state.value = 'X'
-    this.render()
+    this.update()
   }
 }
 
 
-class Board extends HTMLElement {
-  constructor() {
-    super()
-
+class Board extends Util.CustomElement {
+  render() {
     const status = 'Next player: X'
-    const shadow = this.attachShadow({mode: 'open'})
-    shadow.append(...html`
+    return html`
       <style>
       .status {
         margin-bottom: 10px;
@@ -96,7 +83,7 @@ class Board extends HTMLElement {
           ${this.renderSquare(8)}
         </div>
       </div>
-    `)
+    `
   }
 
   renderSquare(i) {
@@ -109,12 +96,9 @@ class Board extends HTMLElement {
 }
 
 
-export default class Game extends HTMLElement {
-  constructor() {
-    super()
-
-    const shadow = this.attachShadow({mode: 'open'})
-    shadow.append(...html`
+export default class Game extends Util.CustomElement {
+  render() {
+    return html`
       <style>
       .game {
         display: flex;
@@ -129,6 +113,6 @@ export default class Game extends HTMLElement {
           <${Board} />
         </div>
       </div>
-    `)
+    `
   }
 }
