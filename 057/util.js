@@ -33,7 +33,7 @@ export class CustomElement extends HTMLElement {
   }
 
   updateState(newState) {
-    console.debug('setState:', newState)
+    console.debug(`${this.constructor.name}:`, 'setState:', newState)
 
     const oldState = this.state
     this.state = {
@@ -107,7 +107,8 @@ export class CustomElement extends HTMLElement {
 
 export function unique() {
   // TODO: Find better id generate mechanism
-  return btoa(Math.random().toString().substring(2)).substring(0, 16)
+  return btoa(Math.random().toString().substring('0.'.length))
+    .substring(0, 16)
 }
 export const globalUnique = unique()
 console.debug('globalUnique:', globalUnique)
@@ -172,14 +173,14 @@ export function funcToCustomElement(func) {
 function defineIfNotExists(name, ctor) {
   const isExists = !!customElements.get(name)
 
+  console.assert(typeof ctor === 'function', `ctor is not a function`)
+
   if (isExists) return
   customElements.define(name, ctor)
 }
 
 
 export function stringify(obj) {
-  console.debug('stringify:', obj)
-
   const mappings = [
     {check: (obj) => obj === null, process: (obj) => ''},
     {
@@ -212,7 +213,8 @@ export function stringify(obj) {
     },
     {check: (obj) => obj instanceof InlineStyle, process: (obj) => `${obj}`},
     {
-      check: (obj) => typeof obj === 'object' && typeof obj.valueOf() !== 'string',
+      check: (obj) => (typeof obj === 'object'
+        && typeof obj.valueOf() !== 'string'),
       process: (obj) => {
         const attrs = []
         Object.entries(obj).forEach(([k, v]) => {
@@ -259,6 +261,11 @@ export function html(strings, ...args) {
   const childNodes = Array.prototype.filter.call(
     node.childNodes, nodeFilter)
 
+  console.assert(childNodes.length === 1,
+    `there are ${childNodes.length} child nodes,`,
+    `which is more than 1 node exist at root of ${html}`,
+    `root of custom element must be a single node`)
+
   if (childNodes[0] === undefined) return null
 
   return chain(childNodes[0])
@@ -266,6 +273,8 @@ export function html(strings, ...args) {
 
 
 export function chain(element) {
+  console.assert(isElement(element), element, 'is not an element')
+
   element.on = (...args) => {
     element.addEventListener(...args)
     return chain(element)
@@ -274,7 +283,7 @@ export function chain(element) {
 }
 
 
-class InlineStyle {
+export class InlineStyle {
   constructor(css) {
     this.virtualElement = html`<div />`
     Object.entries(css).forEach(([k, v]) => {
@@ -305,5 +314,6 @@ export default {
   stringify,
   html,
   chain,
+  InlineStyle,
   css,
 }
