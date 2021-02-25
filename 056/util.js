@@ -157,7 +157,10 @@ export function stringify(arg) {
         return class extends CustomElement {
           constructor() {
             super()
-            func.call(this)
+          }
+
+          render() {
+            return func.call(this)
           }
         }
       }

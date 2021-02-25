@@ -11,14 +11,15 @@ class Square extends Util.CustomElement {
     super()
 
     this.updateState({
-      value: this.getAttribute('value')
+      value: this.getAttribute('value'),
+      isChecked: false
     })
   }
 
   render() {
     const button = html`
         <button class="square">
-          ${this.state.value}
+          ${this.state.isChecked ? 'X' : null}
         </button>
       `
       .firstChild
@@ -46,13 +47,17 @@ class Square extends Util.CustomElement {
     console.debug('onClick:', event, this)
 
     this.updateState({
-      value: 'X'
+      isChecked: true
     })
   }
 }
 
 
 class Board extends Util.CustomElement {
+  constructor() {
+    super()
+  }
+
   render() {
     const status = 'Next player: X'
     return html`
@@ -68,6 +73,19 @@ class Board extends Util.CustomElement {
       </style>
       <div>
         <div class="status">${status}</div>
+        ${[0, 1, 2]
+            .map(v => v*3)
+            .map(v =>
+              html`
+                <div class="board-row">
+                  ${this.renderSquare(v)}
+                  ${this.renderSquare(v+1)}
+                  ${this.renderSquare(v+2)}
+                </div>
+              `
+            )
+        }
+        <!--
         <div class="board-row">
           ${this.renderSquare(0)}
           ${this.renderSquare(1)}
@@ -83,6 +101,7 @@ class Board extends Util.CustomElement {
           ${this.renderSquare(7)}
           ${this.renderSquare(8)}
         </div>
+        -->
       </div>
     `
   }
@@ -125,3 +144,24 @@ export default class Game extends Util.CustomElement {
     `
   }
 }
+
+/*
+export default function Game() {
+  return html`
+    <style>
+    .game {
+      display: flex;
+      flex-direction: row;
+    }
+    .game-info {
+      margin-left: 20px;
+    }
+    </style>
+    <div class="game">
+      <div class="game-board">
+        <${Board} />
+      </div>
+    </div>
+  `
+}
+*/
