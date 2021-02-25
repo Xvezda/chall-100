@@ -251,6 +251,25 @@ export function chain(element) {
 }
 
 
+class InlineStyle {
+  constructor(css) {
+    this.virtualElement = html`<div />`
+    Object.entries(css).forEach(([k, v]) => {
+      this.virtualElement.style[k] = v
+    })
+  }
+
+  toString() {
+    return this.virtualElement.style.cssText
+  }
+}
+
+
+export function css(obj) {
+  return new InlineStyle(obj)
+}
+
+
 export default {
   CustomElement,
   unique,
@@ -259,7 +278,9 @@ export default {
   isIterable,
   isElement,
   isElementSubClass,
+  funcToCustomElement,
   stringify,
   html,
   chain,
+  css,
 }
