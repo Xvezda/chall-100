@@ -90,9 +90,17 @@ class Board extends Util.CustomElement {
   renderSquare(i) {
     console.debug('renderSquare:',
       typeof Square, Square.prototype instanceof HTMLElement)
-    console.dir(Square.prototype)
+    // console.dir(Square.prototype)
 
     return html`<${Square} value="${i}" />`
+  }
+
+  onConnect() {
+    this.addEventListener('stateupdate', this.onStateUpdate.bind(this))
+  }
+
+  onStateUpdate(event) {
+    console.log(':)', event)
   }
 }
 

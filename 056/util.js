@@ -53,22 +53,41 @@ export class CustomElement extends HTMLElement {
   /* https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks */
   connectedCallback() {
     this.update()
-    this.dispatchEvent(new CustomEvent('connect'))
+    if (typeof this.onConnect === 'function') {
+      this.onConnect()
+    }
+    this.dispatchEvent(new CustomEvent('connect', {
+      ...this.$commonEventOptions
+    }))
   }
 
   disconnectedCallback() {
-    this.dispatchEvent(new CustomEvent('disconnect'))
+    if (typeof this.onDisconnect === 'function') {
+      this.onDisconnect()
+    }
+    this.dispatchEvent(new CustomEvent('disconnect', {
+      ...this.$commonEventOptions
+    }))
   }
 
   adoptedCallback() {
-    this.dispatchEvent(new CustomEvent('adopt'))
+    if (typeof this.onAdopt === 'function') {
+      this.onAdopt()
+    }
+    this.dispatchEvent(new CustomEvent('adopt', {
+      ...this.$commonEventOptions
+    }))
   }
 
   attributeChangedCallback(...args) {
+    if (typeof this.onAttributeChange === 'function') {
+      this.onAttributeChange(...args)
+    }
     this.dispatchEvent(new CustomEvent('attributechange', {
       detail: {
         ...args
-      }
+      },
+      ...this.$commonEventOptions
     }))
   }
 }
