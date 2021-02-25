@@ -39,13 +39,20 @@ export function isIterable(obj) {
 }
 
 
+export function isElement(obj) {
+  return obj instanceof HTMLElement
+}
+
+
 export function isElementSubClass(obj) {
-  return typeof obj === 'function' && obj.prototype instanceof HTMLElement
+  return typeof obj === 'function' && isElement(obj.prototype)
 }
 
 
 export function stringify(arg) {
   console.debug('stringify:', arg)
+
+  if (arg === null) return ''
 
   if (typeof arg === 'function') {
     let func = arg
@@ -77,7 +84,7 @@ export function stringify(arg) {
     }
     return elementName
   }
-  if (arg instanceof HTMLElement) {
+  if (isElement(arg)) {
     const element = arg
     return element.outerHTML
   }
@@ -108,7 +115,7 @@ export function stringify(arg) {
 }
 
 
-export function jshtm(strings, ...args) {
+export function html(strings, ...args) {
   const results = [strings[0]]
   strings.slice(1).forEach((v, i) => {
     const arg = args[i]
@@ -120,14 +127,54 @@ export function jshtm(strings, ...args) {
   const parser = new DOMParser()
   const dom = parser.parseFromString(html, 'text/html')
 
-  console.debug('jshtm:',
+  console.debug('html:',
     dom, dom.getElementsByTagName('style'), dom.body.childNodes,
     dom.querySelectorAll('[onclick]'))
 
-  return [
+  const ret = [
     ...dom.getElementsByTagName('style'),  // TODO: De-duplicate for global styles
     ...dom.body.childNodes
   ]
+  const retProxy = new Proxy(ret, {
+    get: (obj, prop) => {
+      const reflected = Reflect.get(dom.body, prop) || Reflect.get(ret, prop)
+      if (isElement(reflected)) {
+        return chain(reflected)
+      }
+      return reflected
+    }
+  })
+  console.debug('retProxy:', retProxy.firstChild)
+
+  return retProxy
+}
+
+
+export function chain(element) {
+  // FIXME: Issue with event dispatch - every elements get same event
+  /*
+  const proxyElement = new Proxy(element, {
+    get: (elm, prop) => {
+      console.debug('chained:', elm, prop)
+      const reflected = Reflect.get(elm, prop)
+      if (typeof reflected !== 'function') {
+        return reflected
+      }
+      return (...args) => {
+        const ret = reflected(...args)
+        if (ret === undefined) return elm
+        return ret
+      }
+    }
+  })
+  return proxyElement
+  */
+
+  element.on = (...args) => {
+    element.addEventListener(...args)
+    return element
+  }
+  return element
 }
 
 
@@ -136,7 +183,9 @@ export default {
   globalUnique,
   entity,
   isIterable,
+  isElement,
   isElementSubClass,
   stringify,
-  jshtm,
+  html,
+  chain,
 }

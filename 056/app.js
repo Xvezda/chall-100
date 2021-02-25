@@ -1,12 +1,24 @@
-import {jshtm} from './util.js'
+import {html} from './util.js'
 import HighlightText, {lorem} from './elements/highlight.js'
 import Game from './elements/game.js'
 
 customElements.define('highlight-text', HighlightText, {extends: 'div'})
 
 
+document.head.append(...html`
+  <style>
+  body {
+    font: 14px "Century Gothic", Futura, sans-serif;
+    margin: 20px;
+  }
+  ol, ul {
+    padding-left: 30px;
+  }
+  </style>
+`)
 document.body.append(
-  ...jshtm`
+  /*
+  ...html`
     <!-- testing highlight element -->
     <div is="highlight-text" keyword="ipsum" id="highlight">
       ${lorem}
@@ -23,16 +35,22 @@ document.body.append(
     }
     </style>
     <ul>
-      ${[1, 2, 3].map(v => jshtm`<li>${v ** 2}</li>`)}
+      ${[1, 2, 3].map(v => html`<li>${v ** 2}</li>`)}
     </ul>
     <hr>
-    <${Game} />
   `
+  */
+
+  html`
+    <${Game} />
+  `.firstChild
 )
 
 
+/*
 // Test result
 console.assert(
   document.getElementById('highlight').textContent.trim()
   === lorem.trim()
 )
+*/

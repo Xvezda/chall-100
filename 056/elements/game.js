@@ -3,18 +3,35 @@
  * https://ko.reactjs.org/tutorial/tutorial.html#what-are-we-building
  */
 
-import {jshtm} from '../util.js'
+import {html, chain} from '../util.js'
 
 
 class Square extends HTMLElement {
   constructor() {
     super()
 
-    const [button] = jshtm`
-      <button class="square" ${{onclick: this.onClick.bind(this)}}>
-        ${this.getAttribute('value')}
-      </button>
-    `
+    this.state = {
+      value: this.getAttribute('value')
+    }
+
+    /*
+    const button = document.createElement('button')
+    button.classList.add('square')
+    button.textContent = this.getAttribute('value')
+    chain(button).on('click', this.onClick.bind(this))
+    */
+    this.render()
+  }
+
+  render() {
+    const button = html`
+        <button class="square">
+          ${this.state.value}
+        </button>
+      `
+      .firstChild
+      .on('click', this.onClick.bind(this))
+
     button.style.cssText = `
       background: #fff;
       border: 1px solid #999;
@@ -29,15 +46,24 @@ class Square extends HTMLElement {
       text-align: center;
       width: 34px;
     `
-    const shadow = this.attachShadow({mode: 'open'})
+    console.debug('Square:', button)
 
-    console.log('Square:', button)
-
-    shadow.append(button)
+    try {
+      const shadow = this.attachShadow({mode: 'open'})
+      shadow.append(button)
+    } catch (e) {
+      this.shadowRoot.replaceChild(button, this.button)
+    } finally {
+      this.button = button
+    }
   }
 
   onClick(event) {
-    alert('click')
+    console.debug('onClick:', event, this)
+    // alert('click')
+
+    this.state.value = 'X'
+    this.render()
   }
 }
 
@@ -48,7 +74,7 @@ class Board extends HTMLElement {
 
     const status = 'Next player: X'
     const shadow = this.attachShadow({mode: 'open'})
-    shadow.append(...jshtm`
+    shadow.append(...html`
       <style>
         .status {
           margin-bottom: 10px;
@@ -85,7 +111,7 @@ class Board extends HTMLElement {
       typeof Square, Square.prototype instanceof HTMLElement)
     console.dir(Square.prototype)
 
-    return jshtm`<${Square} value="${i}" />`
+    return html`<${Square} value="${i}" />`
   }
 }
 
@@ -95,7 +121,7 @@ export default class Game extends HTMLElement {
     super()
 
     const shadow = this.attachShadow({mode: 'open'})
-    shadow.append(...jshtm`
+    shadow.append(...html`
       <style>
         .game {
           display: flex;
