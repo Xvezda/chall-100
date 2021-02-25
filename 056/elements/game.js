@@ -76,14 +76,14 @@ class Board extends HTMLElement {
     const shadow = this.attachShadow({mode: 'open'})
     shadow.append(...html`
       <style>
-        .status {
-          margin-bottom: 10px;
-        }
-        .board-row:after {
-          clear: both;
-          content: "";
-          display: table;
-        }
+      .status {
+        margin-bottom: 10px;
+      }
+      .board-row:after {
+        clear: both;
+        content: "";
+        display: table;
+      }
       </style>
       <div>
         <div class="status">${status}</div>
@@ -123,13 +123,13 @@ export default class Game extends HTMLElement {
     const shadow = this.attachShadow({mode: 'open'})
     shadow.append(...html`
       <style>
-        .game {
-          display: flex;
-          flex-direction: row;
-        }
-        .game-info {
-          margin-left: 20px;
-        }
+      .game {
+        display: flex;
+        flex-direction: row;
+      }
+      .game-info {
+        margin-left: 20px;
+      }
       </style>
       <div class="game">
         <div class="game-board">
