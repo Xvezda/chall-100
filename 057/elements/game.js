@@ -3,7 +3,7 @@
  * https://ko.reactjs.org/tutorial/tutorial.html#what-are-we-building
  */
 
-import Util, {html} from '../util.js'
+import Util, {html, css} from '../util.js'
 
 
 class Square extends Util.CustomElement {
@@ -22,7 +22,6 @@ class Square extends Util.CustomElement {
           ${this.state.isChecked ? 'X' : null}
         </button>
       `
-      .firstChild
       .on('click', this.onClick.bind(this))
 
     button.style.cssText = `
@@ -39,13 +38,10 @@ class Square extends Util.CustomElement {
       text-align: center;
       width: 34px;
     `
-    console.debug('Square:', button)
-    return [button]
+    return button
   }
 
   onClick(event) {
-    console.debug('onClick:', event, this)
-
     this.updateState({
       isChecked: true
     })
@@ -60,8 +56,8 @@ class Board extends Util.CustomElement {
 
   render() {
     const status = 'Next player: X'
-    return html`
-      <style>
+
+    this.shadowStyle = `
       .status {
         margin-bottom: 10px;
       }
@@ -70,7 +66,9 @@ class Board extends Util.CustomElement {
         content: "";
         display: table;
       }
-      </style>
+    `
+
+    return html`
       <div>
         <div class="status">${status}</div>
         ${[0, 1, 2]
@@ -85,32 +83,11 @@ class Board extends Util.CustomElement {
               `
             )
         }
-        <!--
-        <div class="board-row">
-          ${this.renderSquare(0)}
-          ${this.renderSquare(1)}
-          ${this.renderSquare(2)}
-        </div>
-        <div class="board-row">
-          ${this.renderSquare(3)}
-          ${this.renderSquare(4)}
-          ${this.renderSquare(5)}
-        </div>
-        <div class="board-row">
-          ${this.renderSquare(6)}
-          ${this.renderSquare(7)}
-          ${this.renderSquare(8)}
-        </div>
-        -->
       </div>
     `
   }
 
   renderSquare(i) {
-    console.debug('renderSquare:',
-      typeof Square, Square.prototype instanceof HTMLElement)
-    // console.dir(Square.prototype)
-
     return html`<${Square} value="${i}" />`
   }
 
@@ -126,8 +103,7 @@ class Board extends Util.CustomElement {
 
 export default class Game extends Util.CustomElement {
   render() {
-    return html`
-      <style>
+    this.shadowStyle = `
       .game {
         display: flex;
         flex-direction: row;
@@ -135,7 +111,8 @@ export default class Game extends Util.CustomElement {
       .game-info {
         margin-left: 20px;
       }
-      </style>
+    `
+    return html`
       <div class="game">
         <div class="game-board">
           <${Board} />
@@ -145,23 +122,16 @@ export default class Game extends Util.CustomElement {
   }
 }
 
+
 /*
 export default function Game() {
   return html`
-    <style>
-    .game {
-      display: flex;
-      flex-direction: row;
-    }
-    .game-info {
-      margin-left: 20px;
-    }
-    </style>
-    <div class="game">
-      <div class="game-board">
+    <div ${{style: css({display: 'flex', flexDirection: 'row'})}}>
+      <div>
         <${Board} />
       </div>
     </div>
   `
 }
 */
+

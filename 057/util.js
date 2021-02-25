@@ -6,6 +6,30 @@ export class CustomElement extends HTMLElement {
       bubbles: true,
       composed: true
     }
+    this.$shadowStyle = html`<style />`
+
+    this.attachShadow({mode: 'open'})
+  }
+
+  get shadowStyle() {
+    return this.$shadowStyle.textContent
+  }
+
+  set shadowStyle(newValue) {
+    const oldValue = this.$shadowStyle.textContent
+    if (!newValue) {
+      this.shadowRoot.removeChild(this.$shadowStyle)
+    } else if (oldValue) {
+      this.shadowRoot.prepend(this.$shadowStyle)
+    }
+    const isChanged = oldValue !== newValue
+    this.$shadowStyle.textContent = newValue
+
+    if (isChanged) {
+      this.dispatchEvent(new CustomEvent('stylechange', {
+        ...this.$commonEventOptions
+      }))
+    }
   }
 
   updateState(newState) {
@@ -28,26 +52,14 @@ export class CustomElement extends HTMLElement {
   }
 
   update() {
-    try {
-      const shadow = this.attachShadow({mode: 'open'})
+    const updated = this.render()
 
-      this.mounted = this.render()
-      shadow.append(...this.mounted)
-    } catch (e) {
-      const updated = this.render()
-
-      if (updated.length !== this.mounted.length) {
-        this.shadowRoot.innerHTML = ''
-        this.shadowRoot.append(...updated)
-        this.mounted = updated
-        return
-      }
-
-      Array.prototype.forEach.call(updated, (v, i) => {
-        this.shadowRoot.replaceChild(v, this.mounted[i])
-      })
-      this.mounted = updated
+    if ('mounted' in this) {
+      this.shadowRoot.replaceChild(updated, this.mounted)
+    } else {
+      this.shadowRoot.appendChild(updated)
     }
+    this.mounted = updated
   }
 
   /* https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks */
@@ -144,65 +156,86 @@ export function isElementSubClass(obj) {
 }
 
 
-export function stringify(arg) {
-  console.debug('stringify:', arg)
+export function funcToCustomElement(func) {
+  return class extends CustomElement {
+    constructor() {
+      super()
+    }
 
-  if (arg === null) return ''
+    render() {
+      return func.call(this)
+    }
+  }
+}
 
-  if (typeof arg === 'function') {
-    let func = arg
-    const elementName = classToElementName(func)
-    const ctor = (() => {
-      if (!isElementSubClass(func)) {
-        return class extends CustomElement {
-          constructor() {
-            super()
-          }
 
-          render() {
-            return func.call(this)
-          }
+function defineIfNotExists(name, ctor) {
+  const isExists = !!customElements.get(name)
+
+  if (isExists) return
+  customElements.define(name, ctor)
+}
+
+
+export function stringify(obj) {
+  console.debug('stringify:', obj)
+
+  const mappings = [
+    {check: (obj) => obj === null, process: (obj) => ''},
+    {
+      check: (obj) => typeof obj == 'function',
+      process: (obj) => {
+        const func = obj
+        const elementName = classToElementName(func)
+        const ctor = !isElementSubClass(func)
+          ? funcToCustomElement(func)
+          : func
+
+        defineIfNotExists(elementName, ctor)
+        return elementName
+      }
+    },
+    {
+      check: (obj) => isElement(obj),
+      process: (obj) => obj.outerHTML
+    },
+    {
+      check: (obj) => isIterable(obj) && typeof obj !== 'string',
+      process: (obj) => {
+        const iterable = obj
+        const results = []
+        for (const i of iterable) {
+          results.push(stringify(i))
         }
+        return results.join('')
       }
-      return func
-    })()
-
-    const isExists = !!customElements.get(elementName)
-
-    console.debug('stringify: elementName:', elementName)
-
-    if (!isExists) {
-      customElements.define(elementName, ctor)
-    }
-    return elementName
-  }
-  if (isElement(arg)) {
-    const element = arg
-    return element.outerHTML
-  }
-  if (isIterable(arg) && typeof arg !== 'string') {
-    const iterable = arg
-    let result = ''
-    for (const i of iterable) {
-      result += stringify(i)
-    }
-    return result
-  }
-  // arg is object
-  if (typeof arg === 'object' && typeof arg.valueOf() !== 'string') {
-    const obj = arg
-    const attrs = []
-    Object.entries(obj).forEach(([k, v]) => {
-      if (k.startsWith('on')) {
-        console.debug('skipped:', k)
-        return  // TODO: How to bind function to element?
+    },
+    {check: (obj) => obj instanceof InlineStyle, process: (obj) => `${obj}`},
+    {
+      check: (obj) => typeof obj === 'object' && typeof obj.valueOf() !== 'string',
+      process: (obj) => {
+        const attrs = []
+        Object.entries(obj).forEach(([k, v]) => {
+          /*
+          if (k.startsWith('on')) {
+            console.debug('skipped:', k)
+            return  // TODO: How to bind function to element?
+          }
+          */
+          attrs.push([k, `"${stringify(v)}"`].join('='))
+        })
+        console.debug('attrs:', attrs)
+        return attrs.join(' ')
       }
-      attrs.push([k, stringify(v)].join('='))
-    })
-    console.debug('attrs:', attrs)
-    return attrs.join(' ')
+    }
+  ]
+
+  for (const mapping of mappings) {
+    if (mapping.check(obj)) {
+      return mapping.process(obj)
+    }
   }
-  const text = arg
+  const text = obj
   return entity(text)
 }
 
@@ -217,28 +250,18 @@ export function html(strings, ...args) {
   const html = results.join('')
 
   const parser = new DOMParser()
-  const dom = parser.parseFromString(html, 'text/html')
+  const dom = parser.parseFromString(
+    `<template>${html}</template>`, 'text/html')
 
-  console.debug('html:',
-    dom, dom.getElementsByTagName('style'), dom.body.childNodes,
-    dom.querySelectorAll('[onclick]'))
+  const node = dom.querySelector('template').content.cloneNode(true)
+  const nodeFilter = (node) => !node.nodeName.startsWith('#')
 
-  const ret = [
-    ...dom.getElementsByTagName('style'),  // TODO: De-duplicate for global styles
-    ...dom.body.childNodes
-  ]
-  const retProxy = new Proxy(ret, {
-    get: (obj, prop) => {
-      const reflected = Reflect.get(dom.body, prop) || Reflect.get(ret, prop)
-      if (isElement(reflected)) {
-        return chain(reflected)
-      }
-      return reflected
-    }
-  })
-  console.debug('retProxy:', retProxy.firstChild)
+  const childNodes = Array.prototype.filter.call(
+    node.childNodes, nodeFilter)
 
-  return retProxy
+  if (childNodes[0] === undefined) return null
+
+  return chain(childNodes[0])
 }
 
 

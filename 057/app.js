@@ -2,7 +2,7 @@ import {html} from './util.js'
 import Game from './elements/game.js'
 
 
-document.head.append(...html`
+document.head.appendChild(html`
   <style>
   body {
     font: 14px "Century Gothic", Futura, sans-serif;
@@ -14,9 +14,9 @@ document.head.append(...html`
   </style>
 `)
 
-document.body.append(
+document.body.appendChild(
   html`
     <${Game} />
-  `.firstChild
+  `
 )
 
