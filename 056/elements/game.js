@@ -13,13 +13,6 @@ class Square extends HTMLElement {
     this.state = {
       value: this.getAttribute('value')
     }
-
-    /*
-    const button = document.createElement('button')
-    button.classList.add('square')
-    button.textContent = this.getAttribute('value')
-    chain(button).on('click', this.onClick.bind(this))
-    */
     this.render()
   }
 

@@ -56,12 +56,6 @@ export function stringify(arg) {
 
   if (typeof arg === 'function') {
     let func = arg
-    // https://stackoverflow.com/a/35686949
-    if (func.name.startsWith('bound ') && !func.hasOwnProperty('prototype')) {
-      console.debug('skipped:', func)
-      // FIXME: Skip for temporary
-      return ''
-    }
     const elementName = classToElementName(func)
     const ctor = (() => {
       if (!isElementSubClass(func)) {
