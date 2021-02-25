@@ -10,9 +10,9 @@ class Square extends Util.CustomElement {
   constructor() {
     super()
 
-    this.state = {
+    this.updateState({
       value: this.getAttribute('value')
-    }
+    })
   }
 
   render() {
@@ -45,8 +45,9 @@ class Square extends Util.CustomElement {
   onClick(event) {
     console.debug('onClick:', event, this)
 
-    this.state.value = 'X'
-    this.update()
+    this.updateState({
+      value: 'X'
+    })
   }
 }
 

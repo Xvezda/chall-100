@@ -1,6 +1,30 @@
 export class CustomElement extends HTMLElement {
   constructor() {
     super()
+
+    this.$commonEventOptions = {
+      bubbles: true,
+      composed: true
+    }
+  }
+
+  updateState(newState) {
+    console.debug('setState:', newState)
+
+    const oldState = this.state
+    this.state = {
+      ...this.state,
+      ...newState
+    }
+    this.dispatchEvent(new CustomEvent('stateupdate', {
+      detail: {
+        oldState,
+        newState,
+        value: this.state,
+      },
+      ...this.$commonEventOptions
+    }))
+    this.update()
   }
 
   update() {
