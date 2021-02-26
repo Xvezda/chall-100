@@ -74,8 +74,6 @@ export class CustomElement extends HTMLElement {
   }
 
   updateState(newState) {
-    console.debug(`${this.constructor.name}:`, 'setState:', newState)
-
     const oldState = this.state
     this.state = {
       ...this.state,
@@ -97,7 +95,6 @@ export class CustomElement extends HTMLElement {
     // Mount
     this.mount()
 
-    console.debug('connectedCallback:', this.$hashes)
     // Collect hashed elements
     this.$hashes.forEach(hash => {
       const target = this.shadowRoot.querySelector(`[${hash}]`)
@@ -268,7 +265,6 @@ export function stringify(obj) {
           }
           attrs.push([k.toLowerCase(), `"${stringify(v)}"`].join('='))
         })
-        console.debug('attrs:', attrs)
         return attrs.join(' ')
       }
     }
