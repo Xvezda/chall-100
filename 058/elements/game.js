@@ -6,60 +6,57 @@
 import Util, {html, css} from '../util.js'
 
 
-class Square extends Util.CustomElement {
-  render() {
-    const button = html`
-        <button ${this.hash('button')} class="square">
-          ${this.getAttribute('value')}
-        </button>
-      `
-
-    button.style.cssText = `
-      background: #fff;
-      border: 1px solid #999;
-      float: left;
-      font-size: 24px;
-      font-weight: bold;
-      line-height: 34px;
-      height: 34px;
-      margin-right: -1px;
-      margin-top: -1px;
-      padding: 0;
-      text-align: center;
-      width: 34px;
-    `
-    return button
-  }
-
-  onConnect() {
-    this.hashed['button'].addEventListener('click', this.onClick.bind(this))
-  }
-
-  onClick(event) {
-    this.dispatchEvent(new Event('click'))
-  }
+export function Square(attrs) {
+  return html`
+    <button
+      ${{style: css({
+        background: '#fff',
+        border: '1px solid #999',
+        float: 'left',
+        fontSize: '24px',
+        fontWeight: 'bold',
+        lineHeight: '34px',
+        height: '34px',
+        marginRight: '-1px',
+        marginTop: '-1px',
+        padding: '0',
+        textAlign: 'center',
+        width: '34px'
+      })}}
+      class="square"
+    >
+      ${attrs.getNamedItem('value').value}
+    </button>
+  `
 }
 
 
 class Board extends Util.CustomElement {
-  constructor() {
-    super()
-
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    }
+  onConnect() {
+    Object.entries(this.hashed).forEach(([k, v]) => {
+      console.log('Board: onConnect:', k, v)
+      v.addEventListener('click', (event) => {
+        this.dispatchEvent(new CustomEvent('check', {
+          detail: {
+            value: k
+          },
+        }))
+      })
+    })
   }
 
-  render() {
-    const winner = calculateWinner(this.state.squares)
-    let status
-    if (winner) {
-      status = `Winner: ${winner}`
-    } else {
-      status = `Next player: ${this.nextPlayer()}`
-    }
+  renderSquare(i) {
+    const squares = JSON.parse(this.attrs.getNamedItem('squares').value)
+    return html`
+      <${Square}
+        ${this.hash(i)}
+        value="${squares[i]}"
+      />
+    `
+  }
 
+  render(attrs) {
+    console.debug('attrs:', attrs)
     this.shadowStyle = `
       .status {
         margin-bottom: 10px;
@@ -73,7 +70,6 @@ class Board extends Util.CustomElement {
 
     return html`
       <div>
-        <div class="status">${status}</div>
         ${[0, 1, 2]
             .map(v => v*3)
             .map(v =>
@@ -89,44 +85,61 @@ class Board extends Util.CustomElement {
       </div>
     `
   }
+}
 
-  renderSquare(i) {
-    return html`
-      <${Square}
-        ${this.hash(i)}
-        value="${this.state.squares[i]}"
-      />
-    `
-  }
 
-  onConnect() {
-    Object.entries(this.hashed).forEach(([k, v]) => {
-      v.addEventListener('click', (event) => {
-        this.handleClick(parseInt(k))
-      })
-    })
-  }
+export default class Game extends Util.CustomElement {
+  constructor() {
+    super()
 
-  handleClick(i) {
-    const squares = this.state.squares.slice()
-    if (calculateWinner(squares) || squares[i]) {
-      return
+    this.state = {
+      history: [{
+        squares: Array(9).fill(null),
+      }],
+      xIsNext: true,
     }
-    squares[i] = this.nextPlayer()
-    this.updateState({
-      squares,
-      xIsNext: !this.state.xIsNext,
-    })
   }
 
   nextPlayer() {
     return this.state.xIsNext ? 'X' : 'O'
   }
-}
 
+  handleClick(i) {
+    const history = this.state.history
+    const current = history[history.length - 1]
+    const squares = current.squares.slice()
+    if (calculateWinner(squares) || squares[i]) {
+      return
+    }
+    squares[i] = this.nextPlayer()
+    this.updateState({
+      history: history.concat([{
+        squares,
+      }]),
+      xIsNext: !this.state.xIsNext,
+    })
+  }
 
-export default class Game extends Util.CustomElement {
+  onConnect() {
+    console.log('Game: onConnect')
+    this.hashed['board'].addEventListener('check', (event) => {
+      console.log('checked:', event)
+      this.handleClick(parseInt(event.detail.value))
+    })
+  }
+
   render() {
+    const history = this.state.history
+    const current = history[history.length - 1]
+    const winner = calculateWinner(current.squares)
+
+    let status
+    if (winner) {
+      status = `Winner: ${winner}`
+    } else {
+      status = `Next player: ${this.nextPlayer()}`
+    }
+
     this.shadowStyle = `
       .game {
         display: flex;
@@ -139,25 +152,19 @@ export default class Game extends Util.CustomElement {
     return html`
       <div class="game">
         <div class="game-board">
-          <${Board} />
+          <${Board}
+            ${this.hash('board')}
+            squares="${JSON.stringify(current.squares)}"
+          />
+        </div>
+        <div class="game-info">
+          <div>${status}</div>
+          <ol></ol>
         </div>
       </div>
     `
   }
 }
-
-
-/*
-export default function Game() {
-  return html`
-    <div ${{style: css({display: 'flex', flexDirection: 'row'})}}>
-      <div>
-        <${Board} />
-      </div>
-    </div>
-  `
-}
-*/
 
 
 /* https://reactjs.org/tutorial/tutorial.html#declaring-a-winner */
