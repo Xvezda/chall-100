@@ -2,6 +2,7 @@ export class CustomElement extends HTMLElement {
   constructor() {
     super()
 
+    this.attrs = this.attributes
     this.state = {}
 
     this.$hashes = []
@@ -33,7 +34,7 @@ export class CustomElement extends HTMLElement {
   mount() {
     if ('mounted' in this) return
 
-    const root = this.render()
+    const root = this.render(this.attrs)
     this.shadowRoot.appendChild(root)
     this.mounted = root
   }
@@ -42,7 +43,7 @@ export class CustomElement extends HTMLElement {
     // Clear previous hashes
     this.$hashes = []
 
-    const updated = this.render()
+    const updated = this.render(this.attrs)
 
     this.shadowRoot.replaceChild(updated, this.mounted)
     this.mounted = updated
@@ -100,6 +101,10 @@ export class CustomElement extends HTMLElement {
     // Collect hashed elements
     this.$hashes.forEach(hash => {
       const target = this.shadowRoot.querySelector(`[${hash}]`)
+      if (!target) {
+        console.warn(`hash '${hash}' does not exists`)
+        return
+      }
       const value = target.getAttribute(hash)
       console.assert(value && value.length > 0, `value is empty`)
       this.hashed[value] = target
@@ -202,12 +207,8 @@ export function isElementSubClass(obj) {
 
 export function funcToCustomElement(func) {
   return class extends CustomElement {
-    constructor() {
-      super()
-    }
-
-    render() {
-      return func.call(this)
+    render(attrs) {
+      return func.call(this, attrs)
     }
   }
 }
