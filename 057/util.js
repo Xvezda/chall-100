@@ -2,6 +2,11 @@ export class CustomElement extends HTMLElement {
   constructor() {
     super()
 
+    this.state = {}
+
+    this.$hashes = []
+    this.hashed = {}
+
     this.$commonEventOptions = {
       bubbles: true,
       composed: true
@@ -9,6 +14,41 @@ export class CustomElement extends HTMLElement {
     this.$shadowStyle = html`<style />`
 
     this.attachShadow({mode: 'open'})
+  }
+
+  hash(name) {
+    if (name === undefined)
+      throw new Error(`name argument is required`)
+
+    const key = `data-${unique()}-hash`
+    this.$hashes.push(key)
+
+    const value = name
+
+    return {
+      [key]: value,
+    }
+  }
+
+  mount() {
+    if ('mounted' in this) return
+
+    const root = this.render()
+    this.shadowRoot.appendChild(root)
+    this.mounted = root
+  }
+
+  update() {
+    // Clear previous hashes
+    this.$hashes = []
+
+    const updated = this.render()
+
+    this.shadowRoot.replaceChild(updated, this.mounted)
+    this.mounted = updated
+
+    // Enforce connected callback
+    this.connectedCallback()
   }
 
   get shadowStyle() {
@@ -51,50 +91,48 @@ export class CustomElement extends HTMLElement {
     this.update()
   }
 
-  update() {
-    const updated = this.render()
-
-    if ('mounted' in this) {
-      this.shadowRoot.replaceChild(updated, this.mounted)
-    } else {
-      this.shadowRoot.appendChild(updated)
-    }
-    this.mounted = updated
-  }
-
   /* https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks */
   connectedCallback() {
-    this.update()
-    if (typeof this.onConnect === 'function') {
-      this.onConnect()
-    }
+    // Mount
+    this.mount()
+
+    console.debug('connectedCallback:', this.$hashes)
+    // Collect hashed elements
+    this.$hashes.forEach(hash => {
+      const target = this.shadowRoot.querySelector(`[${hash}]`)
+      const value = target.getAttribute(hash)
+      console.assert(value && value.length > 0, `value is empty`)
+      this.hashed[value] = target
+
+      // FIXME: Do not remove attribute for debuggin purpose
+      // target.removeAttribute(hash)
+    })
+
+    this.onConnect()
     this.dispatchEvent(new CustomEvent('connect', {
       ...this.$commonEventOptions
     }))
   }
 
   disconnectedCallback() {
-    if (typeof this.onDisconnect === 'function') {
-      this.onDisconnect()
-    }
+    this.onDisconnect()
     this.dispatchEvent(new CustomEvent('disconnect', {
       ...this.$commonEventOptions
     }))
   }
 
-  adoptedCallback() {
-    if (typeof this.onAdopt === 'function') {
-      this.onAdopt()
-    }
+  adoptedCallback(...args) {
+    this.onAdopt(...args)
     this.dispatchEvent(new CustomEvent('adopt', {
+      detail: {
+        ...args
+      },
       ...this.$commonEventOptions
     }))
   }
 
   attributeChangedCallback(...args) {
-    if (typeof this.onAttributeChange === 'function') {
-      this.onAttributeChange(...args)
-    }
+    this.onAttributeChange(...args)
     this.dispatchEvent(new CustomEvent('attributechange', {
       detail: {
         ...args
@@ -102,13 +140,18 @@ export class CustomElement extends HTMLElement {
       ...this.$commonEventOptions
     }))
   }
+
+  onConnect() {}
+  onDisconnect() {}
+  onAdopt(...args) {}
+  onAttributeChange(...args) {}
 }
 
 
 export function unique() {
   // TODO: Find better id generate mechanism
   return btoa(Math.random().toString().substring('0.'.length))
-    .substring(0, 16)
+    .substring(2, 18)
 }
 export const globalUnique = unique()
 console.debug('globalUnique:', globalUnique)
@@ -218,13 +261,11 @@ export function stringify(obj) {
       process: (obj) => {
         const attrs = []
         Object.entries(obj).forEach(([k, v]) => {
-          /*
           if (k.startsWith('on')) {
-            console.debug('skipped:', k)
-            return  // TODO: How to bind function to element?
+            console.warn(
+              `inline event attribute ${k} found which is not recommended`)
           }
-          */
-          attrs.push([k, `"${stringify(v)}"`].join('='))
+          attrs.push([k.toLowerCase(), `"${stringify(v)}"`].join('='))
         })
         console.debug('attrs:', attrs)
         return attrs.join(' ')
@@ -268,18 +309,7 @@ export function html(strings, ...args) {
 
   if (childNodes[0] === undefined) return null
 
-  return chain(childNodes[0])
-}
-
-
-export function chain(element) {
-  console.assert(isElement(element), element, 'is not an element')
-
-  element.on = (...args) => {
-    element.addEventListener(...args)
-    return chain(element)
-  }
-  return element
+  return childNodes[0]
 }
 
 
@@ -313,7 +343,6 @@ export default {
   funcToCustomElement,
   stringify,
   html,
-  chain,
   InlineStyle,
   css,
 }
