@@ -69,16 +69,16 @@ class Board extends Util.CustomElement {
     return html`
       <div>
         ${[0, 1, 2]
-            .map(v => v*3)
-            .map(v =>
-              html`
-                <div class="board-row">
-                  ${this.renderSquare(v)}
-                  ${this.renderSquare(v + 1)}
-                  ${this.renderSquare(v + 2)}
-                </div>
-              `
-            )
+          .map(v => v*3)
+          .map(v =>
+            html`
+              <div class="board-row">
+                ${this.renderSquare(v)}
+                ${this.renderSquare(v + 1)}
+                ${this.renderSquare(v + 2)}
+              </div>
+            `
+          )
         }
       </div>
     `
@@ -131,13 +131,13 @@ export default class Game extends Util.CustomElement {
     this.hashed['board'].addEventListener('check', (event) => {
       this.handleClick(parseInt(event.detail.value))
     })
-    Object.entries(this.hashed).forEach(([k, v]) => {
-      if (k.startsWith('history-')) {
+    Object.entries(this.hashed)
+      .filter(([k]) => k.startsWith('history-'))
+      .forEach(([k, v]) => {
         v.addEventListener('click', () => {
           this.jumpTo(parseInt(k.split('-').pop()))
         })
-      }
-    })
+      })
   }
 
   render() {
