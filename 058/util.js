@@ -1,3 +1,7 @@
+function hashSelectorFormat(hash) {
+  return `data-${hash}-hash`
+}
+
 export class CustomElement extends HTMLElement {
   constructor() {
     super()
@@ -21,7 +25,7 @@ export class CustomElement extends HTMLElement {
     if (name === undefined)
       throw new Error(`name argument is required`)
 
-    const key = `data-${unique()}-hash`
+    const key = hashSelectorFormat(unique())
     this.$hashes.push(key)
 
     const value = name
@@ -31,11 +35,13 @@ export class CustomElement extends HTMLElement {
     }
   }
 
-  selectHashed(name) {
+  getHashed(name) {
     return this.$hashed[name]
   }
 
-  selectAllHashed() { return this.$hashed }
+  getAllHashed() {
+    return this.$hashed
+  }
 
   mount() {
     if ('mounted' in this) return
