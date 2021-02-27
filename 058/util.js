@@ -64,6 +64,10 @@ export class CustomElement extends HTMLElement {
     this.connectedCallback()
   }
 
+  render() {
+    throw new Error('method named render does not implemented')
+  }
+
   get shadowStyle() {
     return this.$shadowStyle.textContent
   }
