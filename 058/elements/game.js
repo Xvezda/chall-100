@@ -33,7 +33,7 @@ export function Square(attrs) {
 
 class Board extends Util.CustomElement {
   onConnect() {
-    Object.entries(this.hashed).forEach(([k, v]) => {
+    Object.entries(this.selectAllHashed()).forEach(([k, v]) => {
       v.addEventListener('click', (event) => {
         this.dispatchEvent(new CustomEvent('check', {
           detail: {
@@ -128,10 +128,10 @@ export default class Game extends Util.CustomElement {
   }
 
   onConnect() {
-    this.hashed['board'].addEventListener('check', (event) => {
+    this.selectHashed('board').addEventListener('check', (event) => {
       this.handleClick(parseInt(event.detail.value))
     })
-    Object.entries(this.hashed)
+    Object.entries(this.selectAllHashed())
       .filter(([k]) => k.startsWith('history-'))
       .forEach(([k, v]) => {
         v.addEventListener('click', () => {

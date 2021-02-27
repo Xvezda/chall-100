@@ -6,7 +6,7 @@ export class CustomElement extends HTMLElement {
     this.state = {}
 
     this.$hashes = []
-    this.hashed = {}
+    this.$hashed = {}
 
     this.$commonEventOptions = {
       bubbles: true,
@@ -30,6 +30,12 @@ export class CustomElement extends HTMLElement {
       [key]: value,
     }
   }
+
+  selectHashed(name) {
+    return this.$hashed[name]
+  }
+
+  selectAllHashed() { return this.$hashed }
 
   mount() {
     if ('mounted' in this) return
@@ -104,7 +110,7 @@ export class CustomElement extends HTMLElement {
       }
       const value = target.getAttribute(hash)
       console.assert(value && value.length > 0, `value is empty`)
-      this.hashed[value] = target
+      this.$hashed[value] = target
 
       // FIXME: Do not remove attribute for debuggin purpose
       // target.removeAttribute(hash)
