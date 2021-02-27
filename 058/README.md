@@ -1,5 +1,7 @@
 # Day 58
 
+![Preview image](sample.gif)
+
 Complete version of tic-tac-toe from [Day 57](../057).
 
 ## References
