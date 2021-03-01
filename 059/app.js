@@ -4,8 +4,6 @@ class App {
     container.style.display = 'flex'
     container.style.width = '100vw'
     container.style.height = '100vh'
-    // container.style.justifyContent = 'center'
-    // container.style.alignItems = 'center'
 
     const subContainer = document.createElement('div')
     subContainer.style.display = 'flex'
@@ -31,13 +29,14 @@ class App {
     htmlInput.style.cssText = textareaStyles
     htmlInput.style.borderTop = '0'
     htmlInput.style.borderLeft = '0'
+    htmlInput.setAttribute('tabindex', '0')
 
     function dedentText(text) {
       console.debug('dedentText:', text)
       const leadingSpaces = text.match(/^\s*/m)[0]
       const regex = new RegExp(`^\\s{${leadingSpaces.length}}`, 'gm')
       console.debug('dedentText:', regex)
-      return text.replace(regex, '')
+      return text.replace(regex, '').trim()
     }
 
     function dedent(strings, ...args) {
@@ -66,6 +65,7 @@ class App {
     this.htmlInput = htmlInput
 
     const xPathInput = document.createElement('textarea')
+    xPathInput.setAttribute('tabindex', '0')
     xPathInput.style.cssText = textareaStyles
     xPathInput.style.borderLeft = '0'
     xPathInput.style.borderBottom = '0'
@@ -78,13 +78,14 @@ class App {
     subContainer.appendChild(leftPanel)
 
     const preview = document.createElement('iframe')
+    preview.setAttribute('tabindex', '-1')
     preview.sandbox = 'allow-scripts'
     preview.style.width = '50%'
     preview.style.borderLeft = '1px solid gray'
 
     const sandboxScript = (function (global) {
       const removeStyle = function (node) {
-        node.style.border = 'none'
+        node.style.border = ''
       }
       const applyStyle = function (node) {
         node.style.border = '3px solid red'
@@ -150,7 +151,6 @@ class App {
   }
 
   sendMessage() {
-    const value = event.target.value
     const message = {
       html: this.htmlInput.value,
       xpath: this.xPathInput.value,
