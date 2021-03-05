@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Noscript click tracking test</title>
+  </head>
+  <body>
+    <div id="scripted">Disable JavaScript please :)</div>
+    <noscript>
+      <style>
+      #scripted { display: none }
+      </style>
+      <link rel="stylesheet" href="tracker.css">
+      <div>
+        <a href="#tracking">Click Me</a>
+      </div>
+    </noscript>
+  </body>
+</html>

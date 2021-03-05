@@ -1,0 +1,7 @@
+a[href*="#tracking"]:hover {
+    background-image: url(./?you-hovered-link);
+}
+
+a[href*="#tracking"]:active {
+    background-image: url(./?you-clicked-link);
+}
