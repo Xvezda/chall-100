@@ -1,5 +1,7 @@
 # Day 68
 
+![Preview image](sample.gif)
+
 Simple momentum emulation.
 
 ## Reference
