@@ -1,6 +1,15 @@
 # Day 70
 
+![Preview image](sample.gif)
+
 Mobile-like lock pattern on canvas.
+
+## Description
+
+![Figure](figure.png)
+
+The collision of cursor and each points (which is circular shaped)
+can be calculate by using "[Pythagorean theorem](https://en.wikipedia.org/wiki/Pythagorean_theorem)".
 
 ## References
 
