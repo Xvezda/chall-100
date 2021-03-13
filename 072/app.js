@@ -3,20 +3,9 @@ function contextManager(ctx, exec) {
   try {
     exec()
   } catch (e) {
-
+    console.error(e)
   } finally {
     ctx.restore()
-  }
-}
-
-
-function lazyLogger(unit) {
-  let i = 0
-  return function (...args) {
-    ++i
-    if (i % unit === 0) {
-      console.log(...args)
-    }
   }
 }
 
@@ -42,52 +31,95 @@ class App {
     this.onResize()
     window.addEventListener('resize', this.onResize.bind(this), false)
 
-    canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
     canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false)
+    canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
     canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false)
 
-    this.log = lazyLogger(10)
+    canvas.addEventListener('touchstart', this.onTouchStart.bind(this), false)
+    canvas.addEventListener('touchmove', this.onTouchMove.bind(this), false)
+    canvas.addEventListener('touchend', this.onTouchEnd.bind(this), false)
 
     this.initState()
     this.animationId = window.requestAnimationFrame(this.nextFrame.bind(this))
   }
 
-  onMouseMove(event) {
-    event.preventDefault()
-    this.log(event, this.points)
+  drawStart(x, y) {
+    this.isDrawing = true
+    this.setPosition(x, y)
+  }
 
+  drawMove(x, y) {
     this.points.forEach((point, i) => {
-      const distX = event.pageX - point.x
-      const distY = event.pageY - point.y
+      // By pythagorean theorem:
+      // a^2 + b^2 = c^2
+      const a = Math.abs(x - point.x)
+      const b = Math.abs(y - point.y)
+      const c = Math.sqrt(a**2 + b**2)
 
-      const distFromCenter = Math.sqrt(distX**2 + distY**2)
+      // True if c is less or equal to r
+      point.hover = c <= point.r
 
-      point.hover = distFromCenter <= point.r
-
-      if (!point.active && point.hover && this.isMouseDown) {
+      if (!point.active && point.hover && this.isDrawing) {
         point.active = true
-
         this.actives.push(i)
-        console.log('actives:', this.actives)
       }
     })
-    this.setMousePosition(event.pageX, event.pageY)
+    this.setPosition(x, y)
+  }
+
+  drawEnd() {
+    if (this.isDrawing) {
+      this.initState()
+    }
+    this.setPosition(x, y)
   }
 
   onMouseDown(event) {
     event.preventDefault()
+    this.drawStart(event.pageX, event.pageY)
+  }
 
-    this.isMouseDown = true
-    this.setMousePosition(event.pageX, event.pageY)
+  onMouseMove(event) {
+    event.preventDefault()
+    this.drawMove(event.pageX, event.pageY)
   }
 
   onMouseUp(event) {
     event.preventDefault()
+    this.drawEnd(event.pageX, event.pageY)
+  }
 
-    if (this.isMouseDown) {
-      this.initState()
-    }
-    this.setMousePosition(event.pageX, event.pageY)
+  onTouchStart(event) {
+    // Prevent mouse event
+    event.preventDefault()
+
+    // Accept only first touch
+    const touch = event.touches[0]
+
+    this.touchStartId = touch.identifier
+    this.drawStart(touch.pageX, touch.pageY)
+  }
+
+  onTouchMove(event) {
+    event.preventDefault()
+
+    const touch = Array.prototype.find
+      .call(event.touches, e => e.identifier === this.touchStartId)
+    if (!touch) return
+
+    this.drawMove(touch.pageX, touch.pageY)
+  }
+
+  onTouchEnd(event) {
+    event.preventDefault()
+
+    const touch = Array.prototype.find
+      .call(event.changedTouches, e => e.identifier === this.touchStartId)
+    if (!touch) return
+
+    this.drawEnd(touch.pageX, touch.pageY)
+
+    delete this.touchStartId
   }
 
   onResize(event) {
@@ -97,8 +129,8 @@ class App {
 
   initState() {
     this.actives = []
-    this.isMouseDown = false
-    this.mouseX = this.mouseY = -1
+    this.isDrawing = false
+    this.x = this.y = -1
 
     this.initPoints()
   }
@@ -162,8 +194,7 @@ class App {
       contextManager(this.ctx, () => {
         this.ctx.strokeStyle = this.options.theme
         this.ctx.lineWidth = 5
-        this.ctx.lineCap = 'round'
-        this.ctx.lineJoin = 'round'
+        this.ctx.lineCap = this.ctx.lineJoin = 'round'
 
         const point = this.points[v]
         const {x, y} = point
@@ -177,8 +208,8 @@ class App {
 
         if (isLastIndex(a, i)) {
           if (!isLastIndex(this.points, i) &&
-              this.isMouseDown && !point.hover) {
-            this.ctx.lineTo(this.mouseX, this.mouseY)
+              this.isDrawing && !point.hover) {
+            this.ctx.lineTo(this.x, this.y)
           }
           this.ctx.stroke()
         }
@@ -186,9 +217,9 @@ class App {
     })
   }
 
-  setMousePosition(x, y) {
-    this.mouseX = x
-    this.mouseY = y
+  setPosition(x, y) {
+    this.x = x
+    this.y = y
   }
 
   nextFrame(timestamp) {
