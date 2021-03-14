@@ -305,16 +305,22 @@ customElements.define('pattern-lock', PatternLock)
 
 class App {
   constructor() {
-    this.container = document.createElement('div')
-    this.container.style.display = 'flex'
-    this.container.style.width = '100vw'
-    this.container.style.height = '100vh'
-    this.container.style.justifyContent = 'center'
-    this.container.style.alignItems = 'center'
+    const container = document.createElement('div')
+    container.style.display = 'flex'
+    container.style.width = '100vw'
+    container.style.height = '100vh'
+    container.style.justifyContent = 'center'
+    container.style.alignItems = 'center'
 
-    this.container.innerHTML = `<pattern-lock />`
+    const subContainer = document.createElement('div')
 
-    document.body.appendChild(this.container)
+    const patternLock = document.createElement('pattern-lock')
+    patternLock.addEventListener('patterninput', (evt) => console.log(evt), false)
+
+    subContainer.appendChild(patternLock)
+    container.appendChild(subContainer)
+
+    document.body.appendChild(container)
   }
 }
 
