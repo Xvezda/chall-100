@@ -67,7 +67,7 @@ class App {
     this.setPosition(x, y)
   }
 
-  drawEnd() {
+  drawEnd(x, y) {
     if (this.isDrawing) {
       this.initState()
     }
@@ -118,8 +118,6 @@ class App {
     if (!touch) return
 
     this.drawEnd(touch.pageX, touch.pageY)
-
-    delete this.touchStartId
   }
 
   onResize(event) {
