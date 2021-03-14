@@ -10,26 +10,37 @@ function contextManager(ctx, exec) {
 }
 
 
-class App {
-  constructor(props) {
-    const {
-      parent,
-      theme='red'
-    } = props
+class PatternLock extends HTMLElement {
+  constructor() {
+    super()
 
-    this.options = {
-      theme,
+    const defaultAttributes = {
+      height: 300,
+      width: 300,
+      theme: 'red',
     }
+
+    const objectFromAttributes = Object.fromEntries(
+      Object.values(this.attributes)
+        .map(v => [v.name, v.value])
+    )
+
+    this.attrs = {
+      ...defaultAttributes,
+      ...objectFromAttributes,
+    }
+
+    const parent = this.attachShadow({mode: 'open'})
 
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
 
+    canvas.width = this.attrs.width
+    canvas.height = this.attrs.height
+
     this.ctx = ctx
     this.canvas = canvas
     parent.appendChild(canvas)
-
-    this.onResize()
-    window.addEventListener('resize', this.onResize.bind(this), false)
 
     canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false)
     canvas.addEventListener('mousemove', this.onMouseMove.bind(this), false)
@@ -65,6 +76,7 @@ class App {
       }
     })
     this.setPosition(x, y)
+    this.draw()
   }
 
   drawEnd(x, y) {
@@ -154,43 +166,58 @@ class App {
     }
   }
 
+  draw() {
+    this.drawBackground()
+    this.drawConnection()
+  }
+
   drawBackground() {
+    const pathCircle = (ctx, x, y, r) => {
+      ctx.beginPath()
+      ctx.arc(x, y, r, 0, Math.PI*2, true)
+    }
+
+    const fillCircle = (ctx, x, y, r) => {
+      pathCircle(ctx, x, y, r)
+      ctx.fill()
+    }
+
+    const strokeCircle = (ctx, x, y, r) => {
+      pathCircle(ctx, x, y, r)
+      ctx.stroke()
+    }
+
     // Draw each points
     this.points.forEach(point => {
       contextManager(this.ctx, () => {
         this.ctx.fillStyle = 'lightgray'
 
-        this.ctx.beginPath()
-        this.ctx.arc(point.x, point.y, point.r, 0, Math.PI*2, true)
-        this.ctx.fill()
+        fillCircle(this.ctx, point.x, point.y, point.r)
 
         // Draw inner point
         this.ctx.fillStyle = 'gray'
-        this.ctx.beginPath()
-        this.ctx.arc(point.x, point.y, point.r-10, 0, Math.PI*2, true)
-        this.ctx.fill()
+        fillCircle(this.ctx, point.x, point.y, point.r-10)
 
         // Draw hover outline indicator
         if (point.hover || point.active) {
-          this.ctx.strokeStyle = this.options.theme
+          this.ctx.strokeStyle = this.attrs.theme
           this.ctx.lineWidth = 3
-          this.ctx.beginPath()
-          this.ctx.arc(point.x, point.y, point.r, 0, Math.PI*2, true)
-          this.ctx.stroke()
+
+          strokeCircle(this.ctx, point.x, point.y, point.r)
         }
       })
     })
-    this.drawConnection()
   }
 
   drawConnection() {
+    // Helpers for readability
     const isFirstIndex = (arr, i) => !i
     const isLastIndex = (arr, i) => i === arr.length-1
 
     // Draw connected line
     this.actives.forEach((v, i, a) => {
       contextManager(this.ctx, () => {
-        this.ctx.strokeStyle = this.options.theme
+        this.ctx.strokeStyle = this.attrs.theme
         this.ctx.lineWidth = 5
         this.ctx.lineCap = this.ctx.lineJoin = 'round'
 
@@ -222,7 +249,7 @@ class App {
 
   nextFrame(timestamp) {
     this.clearCanvas()
-    this.drawBackground()
+    this.draw()
 
     this.animationId = window.requestAnimationFrame(this.nextFrame.bind(this))
   }
@@ -231,5 +258,17 @@ class App {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
   }
 }
+customElements.define('pattern-lock', PatternLock)
 
-new App({parent: document.body})
+
+window.onload = (evt) => {
+  /*
+  const pattern = document.createElement('pattern-lock')
+  document.body.appendChild(pattern)
+  */
+
+  document.body.innerHTML += `
+    <pattern-lock />
+  `
+}
+
