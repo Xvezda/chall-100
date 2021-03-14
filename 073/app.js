@@ -88,17 +88,24 @@ class PatternLock extends HTMLElement {
 
   onMouseDown(event) {
     event.preventDefault()
-    this.drawStart(event.pageX, event.pageY)
+
+    this.drawStart(
+      event.pageX - event.target.offsetLeft,
+      event.pageY - event.target.offsetTop)
   }
 
   onMouseMove(event) {
     event.preventDefault()
-    this.drawMove(event.pageX, event.pageY)
+    this.drawMove(
+      event.pageX - event.target.offsetLeft,
+      event.pageY - event.target.offsetTop)
   }
 
   onMouseUp(event) {
     event.preventDefault()
-    this.drawEnd(event.pageX, event.pageY)
+    this.drawEnd(
+      event.pageX - event.target.offsetLeft,
+      event.pageY - event.target.offsetTop)
   }
 
   onTouchStart(event) {
@@ -109,7 +116,9 @@ class PatternLock extends HTMLElement {
     const touch = event.touches[0]
 
     this.touchStartId = touch.identifier
-    this.drawStart(touch.pageX, touch.pageY)
+    this.drawStart(
+      touch.pageX - event.target.offsetLeft,
+      touch.pageY - event.target.offsetTop)
   }
 
   onTouchMove(event) {
@@ -119,7 +128,9 @@ class PatternLock extends HTMLElement {
       .call(event.touches, e => e.identifier === this.touchStartId)
     if (!touch) return
 
-    this.drawMove(touch.pageX, touch.pageY)
+    this.drawMove(
+      touch.pageX - event.target.offsetLeft,
+      touch.pageY - event.target.offsetTop)
   }
 
   onTouchEnd(event) {
@@ -129,7 +140,9 @@ class PatternLock extends HTMLElement {
       .call(event.changedTouches, e => e.identifier === this.touchStartId)
     if (!touch) return
 
-    this.drawEnd(touch.pageX, touch.pageY)
+    this.drawEnd(
+      touch.pageX - event.target.offsetLeft,
+      touch.pageY - event.target.offsetTop)
   }
 
   onResize(event) {
@@ -261,14 +274,19 @@ class PatternLock extends HTMLElement {
 customElements.define('pattern-lock', PatternLock)
 
 
-window.onload = (evt) => {
-  /*
-  const pattern = document.createElement('pattern-lock')
-  document.body.appendChild(pattern)
-  */
+class App {
+  constructor() {
+    this.container = document.createElement('div')
+    this.container.style.display = 'flex'
+    this.container.style.width = '100vw'
+    this.container.style.height = '100vh'
+    this.container.style.justifyContent = 'center'
+    this.container.style.alignItems = 'center'
 
-  document.body.innerHTML += `
-    <pattern-lock />
-  `
+    this.container.innerHTML = `<pattern-lock />`
+
+    document.body.appendChild(this.container)
+  }
 }
 
+window.onload = (evt) => new App
