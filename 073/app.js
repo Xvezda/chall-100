@@ -50,25 +50,38 @@ class PatternLock extends HTMLElement {
     canvas.addEventListener('touchmove', this.onTouchMove.bind(this), false)
     canvas.addEventListener('touchend', this.onTouchEnd.bind(this), false)
 
+    this.dispatchCustomEvent('patternload')
+
     this.initState()
     this.animationId = window.requestAnimationFrame(this.nextFrame.bind(this))
   }
 
+  dispatchCustomEvent(name, detail) {
+    const customEvent = new CustomEvent(name, {
+      detail: detail,
+    })
+    this.dispatchEvent(customEvent)
+  }
+
   drawStart(x, y) {
     this.isDrawing = true
-    this.setPosition(x, y)
+    this.drawMove(x, y)
   }
 
   drawMove(x, y) {
-    this.points.forEach((point, i) => {
+    const isInCircle = (circleX, circleY, circleR, targetX, targetY) => {
       // By pythagorean theorem:
       // a^2 + b^2 = c^2
-      const a = Math.abs(x - point.x)
-      const b = Math.abs(y - point.y)
+      const a = Math.abs(targetX - circleX)
+      const b = Math.abs(targetY - circleY)
       const c = Math.sqrt(a**2 + b**2)
 
       // True if c is less or equal to r
-      point.hover = c <= point.r
+      return c <= circleR
+    }
+
+    this.points.forEach((point, i) => {
+      point.hover = isInCircle(point.x, point.y, point.r, x, y)
 
       if (!point.active && point.hover && this.isDrawing) {
         point.active = true
@@ -151,7 +164,23 @@ class PatternLock extends HTMLElement {
   }
 
   initState() {
-    this.actives = []
+    this.dispatchCustomEvent('patterninit')
+
+    this.actives = new Proxy([], {
+      set: (target, prop, value) => {
+        switch (prop) {
+          case 'length':
+            this.dispatchCustomEvent('patterninput', {
+              actives: this.actives.slice()
+            })
+            break
+          default:
+            break
+        }
+        return Reflect.set(target, prop, value)
+      }
+    })
+
     this.isDrawing = false
     this.x = this.y = -1
 
