@@ -1,18 +1,21 @@
-# Day 72
+# Day 73
 
 ![Preview image](sample.gif)
 
-Add features from [Day 71](../071).
+Update features from [Day 72](../072).
 
 
-## Features
+## Updates
 
-* Connecting animation
-* Touch support
+* Changed to custom element
+* Add sound effects
+* Logging patterns
 
 
 ## References
 
-* https://developer.mozilla.org/ko/docs/Web/API/Canvas_API/Tutorial/Applying_styles_and_colors
-* https://developer.mozilla.org/en-US/docs/Web/API/Touch_events
+* https://freesound.org/s/146721/
+* https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetLeft
+* https://developer.mozilla.org/ko/docs/Web/API/Web_Audio_API
+* https://developer.mozilla.org/en-US/docs/Web/Media/Autoplay_guide
 
