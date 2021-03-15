@@ -19,6 +19,7 @@ class App {
     dice.addEventListener('roll', (evt) => {
       console.log('dice:', evt.detail.number)
 
+      // https://freesound.org/people/Agaxly/sounds/348959/
       const audio = new Audio('assets/348959__agaxly__sticks.wav')
       audio.play()
     })

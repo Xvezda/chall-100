@@ -24,7 +24,7 @@ export default class Dice extends HTMLElement {
     root.appendChild(dice)
     this.dice = dice
 
-    const defineSide = ({
+    const createSide = ({
       dotArray,
       dotStyle,
       layoutStyle,
@@ -59,7 +59,7 @@ export default class Dice extends HTMLElement {
     }
 
     this.sides = [
-      defineSide({
+      createSide({
         dotArray: [1],
         dotStyle: `
           border-radius: 50%;
@@ -82,7 +82,7 @@ export default class Dice extends HTMLElement {
           height: 100%;
         `
       }),
-      defineSide({
+      createSide({
         dotArray: [1, 0, 0, 1],
         dotStyle: `
           border-radius: 50%;
@@ -105,7 +105,7 @@ export default class Dice extends HTMLElement {
           height: 50%;
         `
       }),
-      defineSide({
+      createSide({
         dotArray: [1, 0, 0, 0, 1, 0, 0, 0, 1],
         dotStyle: `
           border-radius: 50%;
@@ -128,7 +128,7 @@ export default class Dice extends HTMLElement {
           height: 33%;
         `,
       }),
-      defineSide({
+      createSide({
         dotArray: [1, 1, 1, 1],
         dotStyle: `
           border-radius: 50%;
@@ -151,7 +151,7 @@ export default class Dice extends HTMLElement {
           height: 50%;
         `
       }),
-      defineSide({
+      createSide({
         dotArray: [1, 0, 1, 0, 1, 0, 1, 0, 1],
         dotStyle: `
           border-radius: 50%;
@@ -174,7 +174,7 @@ export default class Dice extends HTMLElement {
           height: 33%;
         `,
       }),
-      defineSide({
+      createSide({
         dotArray: [1, 1, 1, 1, 1, 1],
         dotStyle: `
           border-radius: 50%;
@@ -265,6 +265,8 @@ export default class Dice extends HTMLElement {
       this.stop()
       return
     }
+
+    this.dispatchEvent(new AnimationEvent('animationstart'))
 
     const prevSide = this.dice.querySelector('.side')
     const nextSide = this.sides[number-1]
