@@ -10,3 +10,7 @@
 [submodule "078"]
 	path = 078
 	url = git@github.com:Xvezda/DOMYacht.git
+[submodule "079"]
+	path = 079
+	url = git@github.com:Xvezda/DOMYacht.git
+	branch = dev
