@@ -54,6 +54,7 @@ class App {
     `
 
     this.frameView = document.createElement('input')
+    this.frameView.setAttribute('readonly', 'readonly')
     this.frameView.type = 'text'
     this.frameView.value = `${this.currentFrame}/${this.totalFrames}`
     this.controls.appendChild(this.frameView)
