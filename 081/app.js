@@ -143,6 +143,8 @@ class App {
   }
 
   onMouseDown(event) {
+    if (this.playStatus !== App.PAUSED) return
+
     this.mouseMoveHandler = this.onMouseMove.bind(this)
     this.stage.addEventListener('mousemove', this.mouseMoveHandler, false)
   }
