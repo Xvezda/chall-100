@@ -4,8 +4,9 @@ class App {
 
   constructor(parent) {
     this.playStatus = App.PAUSED
-    this.totalFrames = 10
+    this.totalFrames = 100
     this.currentFrame = 1
+    this.framePerSecond = 60
     this.frames = Array(this.totalFrames).fill(null)
 
     this.container = document.createElement('div')
@@ -18,6 +19,9 @@ class App {
       height: 100vh;
       row-gap: 10px;
     `
+
+    this.animationStyle = document.createElement('style')
+    this.container.appendChild(this.animationStyle)
 
     this.stage = document.createElement('div')
     this.stageWidth = 800
@@ -38,6 +42,7 @@ class App {
     this.addKeyFrame([this.boxX, this.boxY])
 
     this.box = document.createElement('div')
+    this.box.id = 'box'
     this.box.style.cssText = `
       width: 100px;
       height: 100px;
@@ -72,6 +77,7 @@ class App {
     this.controls.appendChild(this.slider)
 
     this.playButton = document.createElement('button')
+    this.playButton.style.width = '100px'
     const playButtonInit = () => {
       this.playButton.textContent = 'play'
       this.playButton.addEventListener('click', (evt) => {
@@ -87,16 +93,37 @@ class App {
     playButtonInit()
     this.controls.appendChild(this.playButton)
 
-    this.stopButton = document.createElement('button')
-    this.stopButton.textContent = 'stop'
-    this.stopButton.addEventListener('click', (evt) => {
-      this.playStatus = App.PAUSED
-    })
-    this.controls.appendChild(this.stopButton)
+    // this.stopButton = document.createElement('button')
+    // this.stopButton.textContent = 'stop'
+    // this.stopButton.addEventListener('click', (evt) => {
+    //   this.stop()
+    // })
+    // this.controls.appendChild(this.stopButton)
 
     this.container.appendChild(this.controls)
 
     parent.appendChild(this.container)
+  }
+
+  createAnimation(name, from, to) {
+    const startFrame = this.getFrame(from)
+    const endFrame = this.getFrame(to)
+
+    console.assert(startFrame !== null && endFrame !== null)
+
+    const [startX, startY] = startFrame
+    const [endX, endY] = endFrame
+
+    return `
+      @keyframes ${name} {
+        from {
+          transform: translate3D(${startX}px, ${startY}px, 0);
+        }
+        to {
+          transform: translate3D(${endX}px, ${endY}px, 0);
+        }
+      }
+    `
   }
 
   play() {
@@ -105,7 +132,7 @@ class App {
     // TODO: Change with rFA
     this.interval = window.setInterval(() => {
       this.onChangeFrame((this.currentFrame % this.totalFrames) + 1)
-    }, 500)
+    }, 1000 / this.framePerSecond)
   }
 
   pause() {
@@ -114,32 +141,45 @@ class App {
   }
 
   stop() {
-    this.playStatus = App.PAUSED
+    this.pause()
     this.onChangeFrame(1)
   }
 
   onInput(event) {
-    const frameNumber = event.target.value
+    const frameNumber = parseInt(event.target.value)
+    console.log('input:', frameNumber)
     this.onChangeFrame(frameNumber)
   }
 
   onChangeFrame(frameNumber) {
-    this.slider.value = frameNumber
+    if (this.slider.value !== frameNumber.toString()) {
+      this.slider.value = frameNumber
+    }
     this.currentFrame = frameNumber
     this.frameView.value = `${this.currentFrame}/${this.totalFrames}`
 
-    const currentFrame = this.getFrame(this.currentFrame)
-    if (currentFrame === null) {
-      const keyframe = this.findPrevKeyFrame(this.currentFrame)
-      if (!keyframe) return
+    const prevKeyFrame = this.findPrevKeyFrame(this.currentFrame)
+    const nextKeyFrame = this.findNextKeyFrame(this.currentFrame) || prevKeyFrame
 
-      const [x, y] = keyframe
-      this.moveObject(this.box, [x, y])
-    } else {
-      // FIXME: Hardcoded
-      const [x, y] = currentFrame
-      this.moveObject(this.box, [x, y])
-    }
+    const singleFrameSecond = 1000 / this.framePerSecond
+    const frameDistance = frameNumber - prevKeyFrame.index
+    console.log('distance:', frameDistance,
+      ', second:', frameDistance * singleFrameSecond)
+    console.log('prevIndex:', prevKeyFrame.index, ', nextIndex:', nextKeyFrame.index)
+
+    const animation = this.createAnimation(
+      'movement', prevKeyFrame.index, nextKeyFrame.index)
+    this.animationStyle.textContent = animation
+
+    // FIXME: hardcoded
+    // this.box.style.transform = ``
+    this.box.style.animationName = 'movement'
+    this.box.style.animationPlayState = 'paused'
+    this.box.style.animationDuration =
+      `${Math.round((nextKeyFrame.index - prevKeyFrame.index) * singleFrameSecond)}ms`
+    this.box.style.animationFillMode = 'both'
+    this.box.style.animationIterationCount = `infinite`
+    this.box.style.animationDelay = `-${Math.round(frameDistance * singleFrameSecond)}ms`
   }
 
   onMouseDown(event) {
@@ -147,6 +187,7 @@ class App {
 
     this.mouseMoveHandler = this.onMouseMove.bind(this)
     this.stage.addEventListener('mousemove', this.mouseMoveHandler, false)
+    this.box.style.animationName = 'none'
   }
 
   onMouseMove(event) {
@@ -172,7 +213,29 @@ class App {
     const prevFrames = this.frames.slice(0, frameNumber)
     prevFrames.reverse()
 
-    return prevFrames.find(frame => frame !== null)
+    const found = prevFrames.find(frame => frame !== null)
+    if (!found) {
+      return null
+    }
+
+    return {
+      index: prevFrames.length - prevFrames.findIndex(frame => frame !== null),
+      frame: found,
+    }
+  }
+
+  findNextKeyFrame(frameNumber) {
+    const nextFrames = this.frames.slice(frameNumber)
+
+    const found = nextFrames.find(frame => frame !== null)
+    if (!found) {
+      return null
+    }
+
+    return {
+      index: frameNumber + 1 + nextFrames.findIndex(frame => frame !== null),
+      frame: found,
+    }
   }
 
   addKeyFrame(frame) {
