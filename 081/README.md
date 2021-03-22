@@ -1,5 +1,7 @@
 # Day 81
 
+![Preview image](sample.gif)
+
 Use CSS animation to generate intermediate state of movement from [Day 80](../080).
 
 ## Reference
