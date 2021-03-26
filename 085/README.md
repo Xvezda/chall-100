@@ -1,5 +1,7 @@
 # Day 85
 
+![Preview image](sample.png)
+
 Add arc and complete ellipse implementation from [Day 84](../084).
 
 ## Note
