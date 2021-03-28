@@ -14,3 +14,6 @@
 	path = 079
 	url = git@github.com:Xvezda/DOMYacht.git
 	branch = dev
+[submodule "087"]
+	path = 087
+	url = git@github.com:Xvezda/premiere-countdown.git
