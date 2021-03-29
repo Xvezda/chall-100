@@ -17,3 +17,6 @@
 [submodule "087"]
 	path = 087
 	url = git@github.com:Xvezda/premiere-countdown.git
+[submodule "088"]
+	path = 088
+	url = git@github.com:Xvezda/premiere-countdown.git
