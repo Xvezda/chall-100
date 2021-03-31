@@ -1,10 +1,7 @@
-# Day 81
+# Day 90
 
-![Preview image](sample.gif)
-
-Use CSS animation to generate intermediate state of movement from [Day 80](../080).
+Improve user interfaces from [Day 81](../081).
 
 ## Reference
-* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Using_CSS_animations
-* https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Animations/Tips
-
+* https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range
+* https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/tabindex
