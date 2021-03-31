@@ -76,6 +76,17 @@ class App {
     this.slider.addEventListener('input', this.onInput.bind(this), false)
     this.controls.appendChild(this.slider)
 
+    const tickmarks = document.createElement('datalist')
+    tickmarks.id = 'tickmarks'
+    Array(this.totalFrames).fill().forEach((_, i) => {
+      const option = document.createElement('option')
+      option.setAttribute('value', i+1)
+
+      tickmarks.appendChild(option)
+    })
+    this.slider.setAttribute('list', tickmarks.id)
+    this.controls.appendChild(tickmarks)
+
     this.playButton = document.createElement('button')
     this.playButton.style.width = '100px'
     const playButtonInit = () => {
