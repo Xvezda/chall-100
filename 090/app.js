@@ -55,15 +55,23 @@ class App {
     this.controls = document.createElement('div')
     this.controls.style.cssText = `
       display: flex;
-      column-gap: 5px;
+      flex-direction: column;
+      row-gap: 10px;
       width: ${this.stageWidth}px;
+    `
+
+    this.timeline = document.createElement('div')
+    this.timeline.style.cssText = `
+      display: flex;
+      column-gap: 5px;
+      width: 100%;
     `
 
     this.frameView = document.createElement('input')
     this.frameView.setAttribute('readonly', 'readonly')
     this.frameView.type = 'text'
     this.frameView.value = `${this.currentFrame}/${this.totalFrames}`
-    this.controls.appendChild(this.frameView)
+    this.timeline.appendChild(this.frameView)
 
     this.slider = document.createElement('input')
     this.slider.type = 'range'
@@ -75,7 +83,9 @@ class App {
       width: 800px;
     `
     this.slider.addEventListener('input', this.onInput.bind(this), false)
-    this.controls.appendChild(this.slider)
+    this.timeline.appendChild(this.slider)
+
+    this.controls.appendChild(this.timeline)
 
     const tickmarks = document.createElement('datalist')
     tickmarks.id = 'tickmarks'
@@ -87,6 +97,13 @@ class App {
     })
     this.slider.setAttribute('list', tickmarks.id)
     this.controls.appendChild(tickmarks)
+
+    this.buttons = document.createElement('div')
+    this.buttons.style.cssText = `
+      display: flex;
+      column-gap: 5px;
+      width: 100%;
+    `
 
     this.playButton = document.createElement('button')
     this.playButton.style.width = '100px'
@@ -103,7 +120,8 @@ class App {
       }, {capture: false, once: true})
     }
     playButtonInit()
-    this.controls.appendChild(this.playButton)
+    this.buttons.appendChild(this.playButton)
+    this.controls.appendChild(this.buttons)
 
     // this.stopButton = document.createElement('button')
     // this.stopButton.textContent = 'stop'
@@ -111,6 +129,31 @@ class App {
     //   this.stop()
     // })
     // this.controls.appendChild(this.stopButton)
+
+    this.prevButton = document.createElement('button')
+    this.prevButton.style.width = '100px'
+    this.prevButton.textContent = 'prev'
+    this.prevButton.addEventListener('click', () => {
+      const keyframe = this.findPrevKeyFrame(this.currentFrame-1)
+      if (!keyframe) return
+
+      this.onChangeFrame(keyframe.index)
+    }, false)
+
+    this.buttons.appendChild(this.prevButton)
+
+    this.nextButton = document.createElement('button')
+    this.nextButton.style.width = '100px'
+    this.nextButton.textContent = 'next'
+    this.nextButton.addEventListener('click', () => {
+      const keyframe = this.findNextKeyFrame(this.currentFrame+1)
+      if (!keyframe) return
+
+      this.onChangeFrame(keyframe.index)
+    }, false)
+
+    this.buttons.appendChild(this.nextButton)
+
 
     this.container.appendChild(this.controls)
 
