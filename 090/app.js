@@ -43,6 +43,7 @@ class App {
 
     this.box = document.createElement('div')
     this.box.id = 'box'
+    this.box.setAttribute('tabindex', 0)
     this.box.style.cssText = `
       width: 100px;
       height: 100px;
@@ -202,6 +203,8 @@ class App {
   }
 
   onMouseMove(event) {
+    // FIXME: Hardcoded
+    if (document.activeElement !== this.box) return
     window.requestAnimationFrame(() => {
       const offsetX = event.pageX - this.box.offsetLeft
       const offsetY = event.pageY - this.box.offsetTop
