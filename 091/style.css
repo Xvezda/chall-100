@@ -1,0 +1,101 @@
+:root {
+    --stroke-width: 3px;
+    --grid-size: 50px;
+    --grid-color: #cffffb;
+    --ground-transform: rotate3d(1, 0, 0, 80deg);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+
+    overflow: hidden;
+    perspective: 100px;
+}
+
+#sky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #5a2863;
+    background: linear-gradient(to top, hotpink, #5a2863);
+}
+
+#sun {
+    position: absolute;
+    top: calc(100vh / 2 - calc(100vw / 3) / 2 - 10%);
+    left: calc(100vw / 2 - calc(100vw / 3) / 2);
+
+    width: calc(100vw / 3);
+    height: calc(100vw / 3);
+    border-radius: 50%;
+
+    background: linear-gradient(#feffc5, hotpink);
+    filter: blur(1px);
+}
+
+.ground {
+    position: absolute;
+    top: 0;
+    left: -250vw;
+
+    width: 500vw;
+    height: 100vh;
+    background:
+        repeating-linear-gradient(
+            transparent,
+            transparent var(--grid-size),
+            var(--grid-color) var(--grid-size),
+            var(--grid-color) calc(var(--grid-size) + var(--stroke-width))),
+        repeating-linear-gradient(
+            90deg,
+            transparent,
+            transparent var(--grid-size),
+            var(--grid-color) var(--grid-size),
+            var(--grid-color) calc(var(--grid-size) + var(--stroke-width))),
+        #1f224a;
+
+    transform: var(--ground-transform);
+
+    animation-name: move-forward;
+    animation-duration: 10s;
+    animation-iteration-count: infinite;
+    animation-timing-function: linear;
+}
+
+@keyframes move-forward {
+    to {
+        transform: var(--ground-transform) translateY(100vh);
+    }
+}
+
+@keyframes extend-move-forward {
+    to {
+        transform: var(--ground-transform) translateY(0);
+    }
+}
+
+.extend {
+    transform: var(--ground-transform) translateY(-100vh);
+    animation-name: extend-move-forward;
+}
+
+#fx {
+    position: absolute;
+    top: -15%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
+
+    opacity: .4;
+    background: radial-gradient(circle at center, yellow, transparent 70%),
+                radial-gradient(circle at center, crimson, transparent 50%),
+                radial-gradient(circle at center, white, transparent 30%);
+}
+
