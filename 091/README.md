@@ -1,5 +1,7 @@
 # Day 91
 
+![Preview image](sample.gif)
+
 Simple ｖａｐｏｒｗａｖｅ using CSS3 features.
 
 ## References
