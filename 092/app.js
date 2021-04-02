@@ -45,11 +45,9 @@ class App {
   drawAtCenter(text) {
     const fontSize = parseInt(this.ctx.font)
     this.ctx.save()
-    // this.ctx.font = `42px sans-serif`
-    this.ctx.font = `42px "Kumar One"`
+    this.ctx.font = `42px "Keania One"`
     this.ctx.textAlign = 'center'
-    this.ctx.lineWidth = 3
-    this.ctx.strokeText(text.toString(),
+    this.ctx.fillText(text.toString(),
       Math.floor(this.canvas.width/2),
       Math.floor(this.canvas.height/2 - fontSize/2))
     this.ctx.restore()
@@ -66,20 +64,30 @@ class App {
   }
 }
 
-new Promise((resolve, reject) => {
-  window.onload = resolve
-}).then(() => {
+
+function windowPromise() {
+  return new Promise((resolve, reject) => {
+    window.onload = resolve
+  })
+}
+
+function fontPromise() {
   return new Promise((resolve, reject) => {
     const link = document.createElement('link')
     link.onload = resolve
+
     link.setAttribute('rel', 'stylesheet')
-    link.setAttribute('href', `https://fonts.googleapis.com/css?family=Kumar+One`)
+    link.setAttribute(
+      'href', `https://fonts.googleapis.com/css?family=Keania+One`)
 
     document.head.appendChild(link)
   })
-}).then(() => {
-  new App(document.body)
-}).catch((err) => {
-  console.error(err)
-})
+}
+
+Promise.all([windowPromise(), fontPromise()])
+  .then(() => {
+    new App(document.body)
+  }).catch((err) => {
+    console.error(err)
+  })
 
