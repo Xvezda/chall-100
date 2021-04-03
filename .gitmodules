@@ -20,3 +20,6 @@
 [submodule "088"]
 	path = 088
 	url = git@github.com:Xvezda/premiere-countdown.git
+[submodule "093"]
+	path = 093
+	url = git@github.com:Xvezda/minimal-metronome.git
