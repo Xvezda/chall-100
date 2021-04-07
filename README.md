@@ -1,17 +1,15 @@
-# Day 94
+# Day 95
 
-![Preview image](sample.png)
+![Preview image](sample.gif)
 
-Cat cylinder by using CSS transform.
+Change cylinder into can from [Day 94](../094).
+
+## Note
+
+First time to use illustrator. cool! :)
 
 ## References
 
-* http://placekitten.com/
-* https://stackoverflow.com/a/9265035
-* https://developer.mozilla.org/en-US/docs/Web/CSS/transform-style
-* https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/rotate3d()
-* https://developer.mozilla.org/ko/docs/Web/CSS/background
-* https://developer.mozilla.org/ko/docs/Web/CSS/background-image
-* https://developer.mozilla.org/ko/docs/Web/CSS/background-repeat
-* https://developer.mozilla.org/en-US/docs/Web/CSS/background-position
+* https://css-tricks.com/things-watch-working-css-3d/
+* https://www.wikihow.com/Cut-a-Hole-in-an-Object-in-Adobe-Illustrator
 

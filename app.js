@@ -1,3 +1,25 @@
+const throttle = (callback) => {
+  let ticking = false
+  return (...args) => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        ticking = false
+        callback(...args)
+      })
+    }
+    ticking = true
+  }
+}
+
+const debounce = (callback, time) => {
+  let id
+  return (...args) => {
+    clearTimeout(id)
+    id = setTimeout(() => callback(...args), time)
+  }
+}
+
+// TODO: Add spinner for resource loading
 class App {
   constructor(parent) {
     const canRadius = 100
@@ -14,11 +36,15 @@ class App {
       width: 100vw;
       height: 100vh;
     `
+
     this.subcontainer = document.createElement('div')
     this.subcontainer.style.cssText = `
       width: 100%;
       height: 100%;
+
+      perspective: 500px;
     `
+    this.container.appendChild(this.subcontainer)
 
     this.can = document.createElement('div')
     this.can.style.cssText = `
@@ -26,37 +52,21 @@ class App {
       top: 50%;
       left: 50%;
 
-      animation-name: rotate-xaxis;
-      animation-duration: 10s;
-      animation-direction: alternate;
-      animation-iteration-count: infinite;
-      animation-timing-function: ease;
-
       transform-style: preserve-3d;
+      transition: transform 1s ease;
     `
 
     this.style.textContent += `
-      @keyframes rotate-xaxis {
+      @keyframes rotation {
         from {
-          transform:
-            translateZ(1000px)
-            rotateX(0deg)
-            rotateY(-90deg)
-            rotateZ(30deg)
-            translateY(-${canHeight/2}px)
-            ;
+          transform: rotateY(360deg);
         }
         to {
-          transform:
-            translateZ(1000px)
-            rotateX(360deg)
-            rotateY(270deg)
-            rotateZ(30deg)
-            translateY(-${canHeight/2}px)
-            ;
+          transform: rotateY(0deg);
         }
       }
     `
+    this.subcontainer.appendChild(this.can)
 
     const topDepth = 15
     const bottomDepth = 15
@@ -74,9 +84,10 @@ class App {
       background-position: center center;
       border-radius: 50%;
       transform:
-        translateX(-${bottomRadius}px)
-        translateY(${canHeight - bottomRadius}px)
+        translateX(${-bottomRadius}px)
+        translateY(${canHeight/2 - bottomRadius}px)
         rotateX(270deg);
+      -webkit-backface-visibility: hidden;
     `
     this.can.appendChild(this.downside)
 
@@ -106,9 +117,10 @@ class App {
         background-repeat: no-repeat;
         background-position: -${(singleWidth-extraPixel) * i}px center;
         transform:
-          translateX(-${singleWidth/2}px)
+          translateX(${-singleWidth/2}px)
           rotateY(${360/sidePlanesNumber * i}deg)
-          translateZ(${canRadius}px);
+          translateZ(${canRadius}px)
+          translateY(${-canHeight/2}px);
         z-index: 1;
 
         -webkit-backface-visibility: hidden;
@@ -132,6 +144,7 @@ class App {
           translateX(-${singleWidth/2}px)
           rotateY(${360/sidePlanesNumber * i}deg)
           translateZ(${canRadius}px)
+          translateY(${-canHeight/2}px)
           rotateX(180deg);
         z-index: -1;
 
@@ -160,8 +173,8 @@ class App {
             darkgray);
         transform-origin: 50% 0;
         transform:
-          translateX(-${singleWidth/2}px)
-          translateY(${canHeight - bottomDepth}px)
+          translateX(${-singleWidth/2}px)
+          translateY(${canHeight/2 - bottomDepth}px)
           rotateY(${360/sidePlanesNumber * i}deg)
           translateZ(${canRadius}px)
           rotateX(${180/Math.PI * rad + 270}deg);
@@ -176,25 +189,106 @@ class App {
     this.upside = document.createElement('div')
     this.upside.style.cssText = `
       position: absolute;
-      width: ${canRadius*2}px;
-      height: ${canRadius*2}px;
+      width: ${canRadius*2 - 2}px;
+      height: ${canRadius*2 - 2}px;
       background-color: gray;
       background-image: url(assets/lid.svg);
       background-size: cover;
       background-position: center center;
       border-radius: 50%;
       transform:
-        translateY(-${canRadius - topDepth}px)
+        translateY(${-canHeight/2-1 - canRadius + topDepth}px)
         rotateX(90deg)
-        translateX(-${canRadius}px);
+        translateX(${-canRadius + 1}px);
+      -webkit-backface-visibility: hidden;
+      outline: 1px solid transparent;
     `
     this.can.appendChild(this.upside)
-    this.subcontainer.appendChild(this.can)
-    this.container.appendChild(this.subcontainer)
 
     parent.appendChild(this.container)
+
+    window.addEventListener('mousedown', this.onMouseDown.bind(this), false)
+    window.addEventListener('mouseup', this.onMouseUp.bind(this), false)
+
+    window.addEventListener('touchstart', this.onTouchStart.bind(this), false)
+    window.addEventListener('touchmove', this.onTouchMove.bind(this), {
+      capture: false,
+      passive: false,
+    })
+    window.addEventListener('touchend', this.onTouchEnd.bind(this), false)
+  }
+
+  onMouseDown(event) {
+    event.preventDefault()
+    this.startMove(event.pageX, event.pageY)
+
+    return false
+  }
+
+  onMouseUp(event) {
+    event.preventDefault()
+    this.endMove(event.pageX, event.pageY)
+
+    return false
+  }
+
+  onTouchStart(event) {
+    event.preventDefault()
+
+    const touch = event.changedTouches[0]
+    this.startMove(touch.pageX, touch.pageY)
+
+    return false
+  }
+
+  onTouchMove(event) {
+    event.preventDefault()
+    return false
+  }
+
+  onTouchEnd(event) {
+    event.preventDefault()
+
+    const touch = event.changedTouches[0]
+    this.endMove(touch.pageX, touch.pageY)
+
+    return false
+  }
+
+  startMove(x, y) {
+    if (typeof this.prevAxis === 'undefined') {
+      this.prevAxis = {
+        y: 0,
+        x: 0,
+        z: 0,
+      }
+    }
+    this.prevXY = {
+      x: x,
+      y: y,
+    }
+  }
+
+  endMove(x, y) {
+    const {x: prevX, y: prevY} = this.prevXY
+    const [deltaX, deltaY] = [prevX - x, prevY - y]
+
+    const isReversed = (deg) => {
+      const angle = Math.abs(deg) % 360
+      return 90 < angle && angle <= 270
+    }
+
+    const newX = this.prevAxis.x + deltaY
+    const newY = this.prevAxis.y + (isReversed(newX) ? deltaX : -deltaX)
+
+    this.can.style.transform =
+      `rotateX(${newX}deg) rotateY(${newY}deg)`
+
+    this.prevAxis.y = newY
+    this.prevAxis.x = newX
   }
 }
+
 
 window.onload = (evt) => new App(document.body)
 
