@@ -209,11 +209,53 @@ class App {
 
     window.addEventListener('mousedown', this.onMouseDown.bind(this), false)
     window.addEventListener('mouseup', this.onMouseUp.bind(this), false)
+
+    window.addEventListener('touchstart', this.onTouchStart.bind(this), false)
+    window.addEventListener('touchmove', this.onTouchMove.bind(this), {
+      capture: false,
+      passive: false,
+    })
+    window.addEventListener('touchend', this.onTouchEnd.bind(this), false)
   }
 
   onMouseDown(event) {
     event.preventDefault()
+    this.startMove(event.pageX, event.pageY)
 
+    return false
+  }
+
+  onMouseUp(event) {
+    event.preventDefault()
+    this.endMove(event.pageX, event.pageY)
+
+    return false
+  }
+
+  onTouchStart(event) {
+    event.preventDefault()
+
+    const touch = event.changedTouches[0]
+    this.startMove(touch.pageX, touch.pageY)
+
+    return false
+  }
+
+  onTouchMove(event) {
+    event.preventDefault()
+    return false
+  }
+
+  onTouchEnd(event) {
+    event.preventDefault()
+
+    const touch = event.changedTouches[0]
+    this.endMove(touch.pageX, touch.pageY)
+
+    return false
+  }
+
+  startMove(x, y) {
     if (typeof this.prevAxis === 'undefined') {
       this.prevAxis = {
         y: 0,
@@ -222,18 +264,14 @@ class App {
       }
     }
     this.prevXY = {
-      x: event.pageX,
-      y: event.pageY,
+      x: x,
+      y: y,
     }
-
-    return false
   }
 
-  onMouseUp(event) {
-    event.preventDefault()
-
+  endMove(x, y) {
     const {x: prevX, y: prevY} = this.prevXY
-    const [deltaX, deltaY] = [prevX - event.pageX, prevY - event.pageY]
+    const [deltaX, deltaY] = [prevX - x, prevY - y]
 
     const isReversed = (deg) => {
       const angle = Math.abs(deg) % 360
@@ -248,8 +286,6 @@ class App {
 
     this.prevAxis.y = newY
     this.prevAxis.x = newX
-
-    return false
   }
 }
 
