@@ -2,14 +2,13 @@
 
 ![Preview image](sample.gif)
 
-Change cylinder into can from [Day 94](../094).
-
-## Note
-
-First time to use illustrator. cool! :)
+Make user control possible from [Day 95](../095).
 
 ## References
 
-* https://css-tricks.com/things-watch-working-css-3d/
-* https://www.wikihow.com/Cut-a-Hole-in-an-Object-in-Adobe-Illustrator
+* https://dev.opera.com/articles/css-will-change-property/
+* https://developer.mozilla.org/en-US/docs/Web/CSS/user-select
+* https://developer.mozilla.org/ko/docs/Web/CSS/cursor
+* https://developer.mozilla.org/ko/docs/Web/API/Touch_events
+* https://developer.mozilla.org/en-US/docs/Web/API/TouchEvent/changedTouches
 
