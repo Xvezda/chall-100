@@ -1,3 +1,24 @@
+const throttle = (callback) => {
+  let ticking = false
+  return (...args) => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        ticking = false
+        callback(...args)
+      })
+    }
+    ticking = true
+  }
+}
+
+const debounce = (callback, time) => {
+  let id
+  return (...args) => {
+    clearTimeout(id)
+    id = setTimeout(() => callback(...args), time)
+  }
+}
+
 // TODO: Add spinner for resource loading
 class App {
   constructor(parent) {
