@@ -42,6 +42,8 @@ class App {
       width: 100%;
       height: 100%;
 
+      -webkit-perspective: 500px;
+      -moz-perspective: 500px;
       perspective: 500px;
     `
     this.container.appendChild(this.subcontainer)
@@ -52,20 +54,14 @@ class App {
       top: 50%;
       left: 50%;
 
+      -webkit-transform-style: preserve-3d;
+      -moz-transform-style: preserve-3d;
       transform-style: preserve-3d;
+
+      -moz-transition: transform 1s ease;
       transition: transform 1s ease;
     `
 
-    this.style.textContent += `
-      @keyframes rotation {
-        from {
-          transform: rotateY(360deg);
-        }
-        to {
-          transform: rotateY(0deg);
-        }
-      }
-    `
     this.subcontainer.appendChild(this.can)
 
     const topDepth = 15
@@ -88,6 +84,7 @@ class App {
         translateY(${canHeight/2 - bottomRadius}px)
         rotateX(270deg);
       -webkit-backface-visibility: hidden;
+      -moz-backface-visibility: hidden;
     `
     this.can.appendChild(this.downside)
 
@@ -102,6 +99,7 @@ class App {
     Array(sidePlanesNumber).fill().forEach((_, i) => {
       const side = document.createElement('div')
       side.style.cssText = `
+        -moz-transform-style: preserve-3d;
         position: relative;
       `
 
@@ -124,6 +122,7 @@ class App {
         z-index: 1;
 
         -webkit-backface-visibility: hidden;
+        -moz-backface-visibility: hidden;
         outline: 1px solid transparent;
       `
       side.appendChild(outside)
@@ -149,6 +148,7 @@ class App {
         z-index: -1;
 
         -webkit-backface-visibility: hidden;
+        -moz-backface-visibility: hidden;
         outline: 1px solid transparent;
       `
       side.appendChild(inside)
@@ -180,6 +180,7 @@ class App {
           rotateX(${180/Math.PI * rad + 270}deg);
 
         -webkit-backface-visibility: hidden;
+        -moz-backface-visibility: hidden;
         outline: 1px solid transparent;
       `
       side.appendChild(bevelPlane)
@@ -201,6 +202,7 @@ class App {
         rotateX(90deg)
         translateX(${-canRadius + 1}px);
       -webkit-backface-visibility: hidden;
+      -moz-backface-visibility: hidden;
       outline: 1px solid transparent;
     `
     this.can.appendChild(this.upside)
