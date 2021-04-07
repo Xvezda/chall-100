@@ -269,6 +269,7 @@ class App {
       x: x,
       y: y,
     }
+    this.can.style.willChange = 'transform'
   }
 
   endMove(x, y) {
@@ -285,6 +286,13 @@ class App {
 
     this.can.style.transform =
       `rotateX(${newX}deg) rotateY(${newY}deg)`
+
+    this.can.addEventListener('transitionend', (evt) => {
+      this.can.style.willChange = ''
+    }, {
+      capture: false,
+      once: true
+    })
 
     this.prevAxis.y = newY
     this.prevAxis.x = newX
