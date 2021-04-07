@@ -72,23 +72,23 @@ class App {
     this.downside = document.createElement('div')
     this.downside.style.cssText = `
       position: absolute;
-      width: ${bottomRadius*2}px;
-      height: ${bottomRadius*2}px;
+      width: ${bottomRadius*2 + 4}px;
+      height: ${bottomRadius*2 + 4}px;
       background-color: dimgray;
       background-image: url(assets/bottom.svg);
       background-size: cover;
       background-position: center center;
       border-radius: 50%;
       transform:
-        translateX(${-bottomRadius}px)
-        translateY(${canHeight/2 - bottomRadius}px)
+        translateX(${-bottomRadius - 2}px)
+        translateY(${canHeight/2 - bottomRadius - 2}px)
         rotateX(270deg);
       -webkit-backface-visibility: hidden;
       -moz-backface-visibility: hidden;
     `
     this.can.appendChild(this.downside)
 
-    const sidePlanesNumber = 24
+    const sidePlanesNumber = 16
     const totalWidth = 2*Math.PI * canRadius
     /* Add extra 1px to fill the gap */
     const extraPixel = 1
