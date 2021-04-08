@@ -144,12 +144,15 @@ function decodeFile(file) {
           if (alpha === 0) break outer;
 
           var percentage = alpha / 255;
+          // 0.1
           if (0 < percentage) {
             bytes.push(data[0]);
           }
-          if (.3 < percentage) {
+          // 0.3
+          if (.3 <= percentage) {
             bytes.push(data[1]);
           }
+          // 0.7
           bytes.push(data[2]);
         }
       }
@@ -160,7 +163,7 @@ function decodeFile(file) {
       });
       var blob = new Blob([array.buffer], {type: 'application/octet-stream'});
       var url = URL.createObjectURL(blob);
-      downloadURL(url, 'download.bin');
+      downloadURL(url, file.name + '_bin2img.bin');
     })
     .catch(function (err) {
       console.error(err);
@@ -185,7 +188,7 @@ function clickDownload() {
 
 function downloadCanvas() {
   var dataURL = canvas.toDataURL('image/png');
-  downloadURL(dataURL, file.name);
+  downloadURL(dataURL, file.name + '_bin2img.png');
 }
 
 
