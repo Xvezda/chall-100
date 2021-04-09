@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>bin2img encode/decode</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <div class="flex direction-column row-gap-1 full container">
+      <div class="canvas-wrapper">
+        <canvas id="canvas" width="800" height="600"></canvas>
+      </div>
+      <div class="flex direction-row column-gap-1">
+        <div class="flex stack-on-mobile">
+          <div>
+            <input type="radio" name="mode" value="encode" id="encode" checked>
+            <label for="encode">Encode</label>
+          </div>
+          <div>
+            <input type="radio" name="mode" value="decode" id="decode">
+            <label for="decode">Decode</label>
+          </div>
+        </div>
+        <div class="flex stack-on-mobile column-gap-half row-gap-half">
+          <div>
+            <label for="pixel-size">pixel size: </label>
+            <input id="pixel-size" name="pixel-size" type="number" min="1" max="10" value="5" onchange="pixelSizeChanged(event)">
+          </div>
+          <input type="file" onchange="fileChanged(event)">
+          <input id="download" type="button" value="Download" onclick="clickDownload(event)" disabled>
+        </div>
+      </div>
+    </div>
+    <script src="bin2img.js"></script>
+  </body>
+</html>
