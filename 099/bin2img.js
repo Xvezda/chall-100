@@ -1,3 +1,5 @@
+;(function (global, document) {
+
 window.onload = function (event) {
   var hash = location.hash;
   var matches = /([a-z_-][a-z0-9_-]+)=([^=]*)/gi.exec(hash) || [];
@@ -199,3 +201,6 @@ function downloadURL(url, name) {
 
   link.click();
 }
+
+
+})(window, document);
