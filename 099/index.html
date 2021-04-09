@@ -4,15 +4,17 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <title>bin2img encode/decode</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Gothic+A1">
     <link rel="stylesheet" href="style.css">
+    <script src="bin2img.js" defer></script>
   </head>
   <body>
     <div class="flex direction-column row-gap-1 full container">
       <div class="canvas-wrapper">
-        <canvas id="canvas" width="800" height="600"></canvas>
+        <canvas id="canvas" class="canvas" width="640" height="480"></canvas>
       </div>
       <div class="flex direction-row column-gap-1">
-        <div class="flex stack-on-mobile">
+        <div class="flex align-center row-gap-half column-gap-half stack-on-mobile">
           <div>
             <input type="radio" name="mode" value="encode" id="encode" checked>
             <label for="encode">Encode</label>
@@ -21,17 +23,46 @@
             <input type="radio" name="mode" value="decode" id="decode">
             <label for="decode">Decode</label>
           </div>
+          <!--
+          <select id="method">
+            <option selected>end of bytes</option>
+            <option>pixel header</option>
+          </select>
+          -->
         </div>
         <div class="flex stack-on-mobile column-gap-half row-gap-half">
-          <div>
-            <label for="pixel-size">pixel size: </label>
-            <input id="pixel-size" name="pixel-size" type="number" min="1" max="10" value="5" onchange="pixelSizeChanged(event)">
+          <div class="flex align-center column-gap-half">
+            <label for="canvas-width">Width</label>
+            <input
+              id="canvas-width"
+              name="canvas-width"
+              type="range"
+              min="1"
+              max="1200"
+              value="800"
+              onchange="widthChanged(event)"
+            >
           </div>
+          <input
+            id="cancel"
+            type="button"
+            value="Cancel"
+            onclick="clickCancel(event)"
+            disabled
+          >
+          <input
+            id="download"
+            type="button"
+            value="Download"
+            onclick="clickDownload(event)"
+            disabled
+          >
           <input type="file" onchange="fileChanged(event)">
-          <input id="download" type="button" value="Download" onclick="clickDownload(event)" disabled>
         </div>
       </div>
     </div>
-    <script src="bin2img.js"></script>
+    <div id="progress" class="hide progress">
+      <div class="bar"></div>
+    </div>
   </body>
 </html>

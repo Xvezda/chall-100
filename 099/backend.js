@@ -1,63 +1,89 @@
+var encodeMethods = new Map();
+var decodeMethods = new Map();
+
+function getEncoder(name) {
+  return encodeMethods[name] || new Function;
+}
+
+
+function registerEncoder(name, func) {
+  encodeMethods[name] = func;
+}
+
+
+// End-of-byte encoding
+registerEncoder('eob', function (data) {
+  var array = data.array;
+  var results = [];
+
+  var x;
+  for (var i = 0, x = 0; i < array.length; i += 3, ++x) {
+    var r = array[i],
+        g = array[i+1],
+        b = array[i+2];
+
+    /**
+     * Use alpha as indicator.
+     *
+     * Preserved alphas:
+     *   0: End of bytes. (non of bytes are used)
+     *   1: Full-width bytes. (means all of RGB values are used)
+     *
+     * if byte does not exactly divided by 3,
+     * alpha becomes random value between .1 ~ .9
+     * by the numbers of remaining bytes.
+     *
+     * Alpha range by remaining available bytes:
+     *   R: .1 ~ .4
+     *   R and G: .5 ~ .9
+     */
+    var alpha;
+    if (g === undefined) {
+      // .1 ~ .4
+      alpha = '.' + Math.floor(Math.random()*4 + 1);
+    } else if (b === undefined) {
+      // .5 ~ .9
+      alpha = '.' + Math.floor(Math.random()*5 + 5);
+    } else {
+      alpha = 1;
+    }
+    var fill = 'rgba(' + [r || 0, g || 0, b || 0, alpha].join(',') + ')';
+    // var fill = [r || 0, g || 0, b || 0, alpha * 255];
+
+    self.postMessage({
+      type: 'progress',
+      index: i,
+    });
+    results.push(fill);
+  }
+  results.push('rgba(0,0,0,0)');
+  // results.push([0, 0, 0, 0]);
+
+  self.postMessage({
+    type: 'done',
+    results: results,
+  });
+});
+
+
 self.onmessage = function (event) {
-  var type = event.data.type;
+  console.log('message from frontend:', event);
+
+  var encoder,
+      decoder;
+
+  var message = event.data;
+  var type = message.type;
   switch (type) {
     case 'encode':
-      encodeArray(event.data);
+      encoder = getEncoder(message.method);
+      if (!encoder) break;
+      encoder.call(self, message);
       break;
     default:
       console.log('unhandled type:', type);
       break;
   }
-  console.log('message from frontend:', event);
 };
 
 
-function encodeArray(data) {
-  var array = data.array,
-      size = data.size,
-      width = data.width;
-
-  var x, y;
-  var i = 0;
-  var results = [];
-  // TODO: Make perfect rectangle (without alpha)
-  outer: for (y = 0; ; y += size) {
-    for (x = 0; x < data.width; x += size) {
-      var r = array[i];
-      var g = array[i+1];
-      var b = array[i+2];
-
-      if (r === undefined && g === undefined && b === undefined) {
-        results.push({
-          x: x,
-          y: y,
-          fill: 'rgba(0, 0, 0, 0)',
-        });
-        break outer;
-      } else if (r === undefined || g === undefined || b === undefined) {
-        var alpha = (((r && 1 || 0) << 2) |
-                     ((g && 1 || 0) << 1) |
-                      (b && 1 || 0)) / 10;
-        results.push({
-          x: x,
-          y: y,
-          fill: 'rgba(' + [r || 0, g || 0, b || 0, alpha].join(', ') + ')',
-        });
-      } else {
-        results.push({
-          x: x,
-          y: y,
-          fill: 'rgba(' +
-            [r || 0, g || 0, b || 0, 1].join(', ') +
-          ')',
-        });
-      }
-      i += 3;
-    }
-  }
-  self.postMessage({
-    type: 'encoded',
-    height: y + size,
-    results: results,
-  });
-}
