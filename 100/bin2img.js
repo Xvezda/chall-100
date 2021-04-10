@@ -271,17 +271,30 @@ global.clickDownload = function () {
 
 
 function downloadCanvas() {
-  var dataURL = canvas.toDataURL('image/png');
-  downloadURL(dataURL, file.name + '.bin2img.png');
+  canvas.toBlob(function (blob) {
+    downloadURL(URL.createObjectURL(blob), file.name + '.bin2img.png');
+  });
 }
 
 
 function downloadURL(url, name) {
   var link = document.createElement('a');
+  document.body.appendChild(link);
+
   link.href = url;
   link.download = name;
 
   link.click();
+  link.addEventListener('click', function () {
+    link.remove();
+    setTimeout(function () {
+      try {
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error(e);
+      }
+    }, 1000);
+  }, {capture: false, once: true});
 }
 
 // End of IIFE
