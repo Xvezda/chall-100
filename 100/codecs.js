@@ -38,25 +38,28 @@ registerCodec('pixelheader', function (message, target) {
   console.log('[WORKER] array:', array);
 
   var results = [];
-  for (var i = 0; i < length; i += MAXSIZE) {
+  var throttleMessage = throttle(target.postMessage, 100, {immediate: true});
+  var i, j;
+  for (i = 0; i < length; i += MAXSIZE) {
     var remain = length-i >= MAXSIZE ? MAXSIZE : length - i;
+    console.log('[WORKER] remain:', remain, 'offset:', i+j, 'x:', results.length);
     results.push([
       (remain & (0xff<<16)) >>> 16,
       (remain & (0xff<<8)) >>> 8,
       (remain & (0xff)),
       255,
     ]);
-    for (var j = 0; j < remain; j += 3) {
+    for (j = 0; j < remain; j += 3) {
       var r = array[i+j],
           g = array[i+j + 1],
           b = array[i+j + 2];
       results.push([r || 0, g || 0, b || 0, 255]);
 
-      target.postMessage({
-        type: 'progress',
-        percentage: Math.floor((i+j) / length * 100),
-      });
     }
+    throttleMessage({
+      type: 'progress',
+      percentage: Math.floor((i+j) / length * 100),
+    });
   }
 
   var image = arrayToImageData(results, width);
@@ -76,22 +79,27 @@ registerCodec('pixelheader', function (message, target) {
 
   var header;
   var offset = 0;
+  var throttleMessage = throttle(target.postMessage, 100, {immediate: true});
+  var i;
   do {
     header = (data[offset] << 16) | (data[offset+1] << 8) | data[offset+2];
+    console.log('[WORKER] header:', header, 'offset:', offset);
+    if (!header) break;
     offset += 4;
 
-    for (var i = 0; i < header; ++i) {
+    for (i = 0; i < header; ++i) {
       bytes.push(data[offset + i]);
       if ((i+1) % 4 === 0) {
         bytes.pop();
         ++header;
       }
-      target.postMessage({
-        type: 'progress',
-        percentage: Math.floor((offset + i) / length * 100),
-      });
     }
-    offset += header * 3;
+    offset += header + 1;
+
+    throttleMessage({
+      type: 'progress',
+      percentage: Math.floor(offset % length / length * 100),
+    });
   } while (offset < length);
 
   var url = bytesToURL(bytes);
