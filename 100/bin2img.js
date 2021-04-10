@@ -38,52 +38,6 @@ window.onload = function (event) {
 };
 
 
-function debounce(callback, time) {
-  var timeout;
-  return function () {
-    var _arguments = arguments;
-
-    clearTimeout(timeout);
-    timeout = setTimeout(function () {
-      callback.apply(null, _arguments);
-    }, time);
-  };
-}
-
-
-function throttle(callback, time, options) {
-  var timer;
-  var type = options && options.type;
-  switch (type) {
-    case 'rAF':
-      timer = window.requestAnimationFrame;
-      break;
-    default:
-      timer = window.setTimeout;
-      break;
-  }
-  var immediate = options && options.immediate;
-
-  var ticking = false;
-  return function () {
-    var _arguments = arguments;
-
-    if (!ticking) {
-      ticking = true;
-      if (immediate) {
-        callback.apply(null, _arguments);
-      }
-      timer(function () {
-        ticking = false;
-        if (!immediate) {
-          callback.apply(null, _arguments);
-        }
-      }, time || 16);
-    }
-  };
-}
-
-
 function createWorker() {
   return new Worker('backend.js');
 }
@@ -186,7 +140,7 @@ function drawFile(file) {
 
       cancelBtn.removeAttribute('disabled');
 
-      var progressThrottle = throttle(setProgress, 200, {immediate: true});
+      var progressThrottle = throttle(setProgress, 20, {type: 'rAF'});
 
       backend.onmessage = function (event) {
         var message = event.data;
@@ -254,7 +208,7 @@ function decodeFile(file) {
 
       cancelBtn.removeAttribute('disabled');
 
-      var progressThrottle = throttle(setProgress, 200, {immediate: true});
+      var progressThrottle = throttle(setProgress, 20, {type: 'rAF'});
 
       backend.onmessage = function (event) {
         var message = event.data;
