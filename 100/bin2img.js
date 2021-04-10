@@ -2,7 +2,7 @@
 
 var backend = createWorker(),
     canvas = document.getElementById('canvas'),
-    ctx = canvas.getContext('2d'),
+    ctx = canvas.getContext('2d', {alpha: false}),
     progress = document.getElementById('progress');
 
 var widthSlider = document.getElementById('canvas-width');
@@ -210,7 +210,7 @@ function drawFile(file) {
 
       backend.postMessage({
         type: 'encode',
-        method: 'eob',
+        method: 'pixelheader',
         width: canvas.width,
         data: array,
       });
@@ -278,7 +278,7 @@ function decodeFile(file) {
 
       backend.postMessage({
         type: 'decode',
-        method: 'eob',
+        method: 'pixelheader',
         image: ctx.getImageData(0, 0, canvas.width, canvas.height),
       });
     })
