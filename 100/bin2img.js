@@ -46,17 +46,34 @@ function debounce(callback, time) {
 }
 
 
-function throttle(callback) {
+function throttle(callback, time, options) {
+  var timer;
+  var type = options && options.type;
+  switch (type) {
+    case 'rAF':
+      timer = window.requestAnimationFrame;
+      break;
+    default:
+      timer = window.setTimeout;
+      break;
+  }
+  var immediate = options && options.immediate;
+
   var ticking = false;
   return function () {
     var _arguments = arguments;
 
     if (!ticking) {
       ticking = true;
-      window.requestAnimationFrame(function () {
-        ticking = false;
+      if (immediate) {
         callback.apply(null, _arguments);
-      });
+      }
+      timer(function () {
+        ticking = false;
+        if (!immediate) {
+          callback.apply(null, _arguments);
+        }
+      }, time || 16);
     }
   };
 }
@@ -100,11 +117,6 @@ function unlockUI() {
 
 function getMode() {
   return document.querySelector('input[name="mode"]:checked').value;
-}
-
-
-function getPixelSize() {
-  return parseInt(document.querySelector('input[name="pixel-size"]').value);
 }
 
 
@@ -159,26 +171,18 @@ function fileAsArray(file) {
 function drawFile(file) {
   fileAsArray(file)
     .then(function (array) {
-      backend.postMessage({
-        type: 'encode',
-        method: 'eob',
-        width: canvas.width,
-        array: array,
-      });
-
       showProgress();
       lockUI();
 
       cancelBtn.removeAttribute('disabled');
 
-      var length = array.length;
-      var progressThrottle = throttle(setProgress);
+      var progressThrottle = throttle(setProgress, 200, {immediate: true});
 
       backend.onmessage = function (event) {
         var message = event.data;
         switch (message.type) {
           case 'progress':
-            progressThrottle(Math.floor(message.index / length * 100));
+            progressThrottle(message.percentage);
             break;
           case 'done':
             hideProgress();
@@ -193,6 +197,14 @@ function drawFile(file) {
             break;
         }
       };
+
+      backend.postMessage({
+        type: 'encode',
+        method: 'eob',
+        width: canvas.width,
+        data: array,
+      });
+
     })
     .catch(function (err) {
       console.error(err);
@@ -207,7 +219,7 @@ function draw(image) {
   ctx.putImageData(image, 0, 0);
 }
 
-/*
+
 function decodeFile(file) {
   if (!file.type.startsWith('image/')) {
     alert('file type must be an image');
@@ -222,46 +234,49 @@ function decodeFile(file) {
     img.src = URL.createObjectURL(file);
   })
     .then(function () {
-      // console.dir(img);
+      // Fit canvas size to image
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
 
-      var bytes = [];
-      outer: for (var y = 0; y < canvas.height; y += pixelSize) {
-        for (var x = 0; x < canvas.width; x += pixelSize) {
-          var pixel = ctx.getImageData(x, y, 1, 1);
-          var data = pixel.data;
-          var alpha = data[3];
-          if (alpha === 0) break outer;
+      showProgress();
+      lockUI();
 
-          var percentage = alpha / 255;
-          // 0.1
-          if (0 < percentage) {
-            bytes.push(data[0]);
-          }
-          // 0.3
-          if (.3 <= percentage) {
-            bytes.push(data[1]);
-          }
-          // 0.7
-          bytes.push(data[2]);
+      cancelBtn.removeAttribute('disabled');
+
+      var progressThrottle = throttle(setProgress, 200, {immediate: true});
+
+      backend.onmessage = function (event) {
+        var message = event.data;
+        switch (message.type) {
+          case 'progress':
+            progressThrottle(message.percentage);
+            break;
+          case 'done':
+            hideProgress();
+            setProgress(0);
+
+            unlockUI();
+            cancelBtn.setAttribute('disabled', 'disabled');
+
+            downloadURL(message.url, file.name + '_bin2img.bin');
+            break;
+          default:
+            break;
         }
-      }
+      };
 
-      var array = new Uint8Array(bytes.length);
-      bytes.forEach(function (byte, i) {
-        array[i] = byte;
+      backend.postMessage({
+        type: 'decode',
+        method: 'eob',
+        image: ctx.getImageData(0, 0, canvas.width, canvas.height),
       });
-      var blob = new Blob([array.buffer], {type: 'application/octet-stream'});
-      var url = URL.createObjectURL(blob);
-      downloadURL(url, file.name + '_bin2img.bin');
     })
     .catch(function (err) {
       console.error(err);
     });
 }
-*/
+
 
 global.clickCancel = function (event) {
   backend.terminate();
