@@ -14,6 +14,7 @@ function registerEncoder(name, func) {
 // End-of-byte encoding
 registerEncoder('eob', function (data) {
   var array = data.array;
+  var width = data.width;
   var results = [];
 
   var x;
@@ -47,8 +48,7 @@ registerEncoder('eob', function (data) {
     } else {
       alpha = 1;
     }
-    var fill = 'rgba(' + [r || 0, g || 0, b || 0, alpha].join(',') + ')';
-    // var fill = [r || 0, g || 0, b || 0, alpha * 255];
+    var fill = [r || 0, g || 0, b || 0, alpha * 255];
 
     self.postMessage({
       type: 'progress',
@@ -56,12 +56,21 @@ registerEncoder('eob', function (data) {
     });
     results.push(fill);
   }
-  results.push('rgba(0,0,0,0)');
-  // results.push([0, 0, 0, 0]);
+  results.push([0, 0, 0, 0]);
+
+  var flatten = results.flat();
+  var length = flatten.length;
+
+  // Padding
+  for (var i = 0, m = width*4 - (length % (width*4)); i < m; ++i) {
+    flatten.push([0, 0, 0, 0]);
+  }
+  var clamped = Uint8ClampedArray.from(flatten);
+  var image = new ImageData(clamped, width);
 
   self.postMessage({
     type: 'done',
-    results: results,
+    image: image,
   });
 });
 

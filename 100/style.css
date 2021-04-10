@@ -112,12 +112,16 @@ button {
 .canvas {
     background-color: white;
     max-width: 100%;
+
+    display: block;
 }
 
 .canvas-wrapper {
     background-color: lightgray;
     max-height: 480px;
     min-height: 300px;
+
+    overflow-x: hidden;
     overflow-y: auto;
 }
 

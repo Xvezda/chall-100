@@ -88,10 +88,6 @@ function lockUI() {
     .forEach(function (input) {
       input.setAttribute('disabled', 'disabled');
     });
-  /*
-  downloadBtn.setAttribute('disabled', 'disabled');
-  widthSlider.setAttribute('disabled', 'disabled');
-  */
 }
 
 function unlockUI() {
@@ -99,10 +95,6 @@ function unlockUI() {
     .forEach(function (input) {
       input.removeAttribute('disabled');
     });
-  /*
-  downloadBtn.removeAttribute('disabled');
-  widthSlider.removeAttribute('disabled');
-  */
 }
 
 
@@ -118,6 +110,7 @@ function getPixelSize() {
 
 global.fileChanged = function (event) {
   file = event.target.files[0];
+  if (!file) return;
 
   var mode = getMode();
   switch (mode) {
@@ -169,6 +162,7 @@ function drawFile(file) {
       backend.postMessage({
         type: 'encode',
         method: 'eob',
+        width: canvas.width,
         array: array,
       });
 
@@ -193,7 +187,7 @@ function drawFile(file) {
             unlockUI();
             cancelBtn.setAttribute('disabled', 'disabled');
 
-            draw(message);
+            draw(message.image);
             break;
           default:
             break;
@@ -206,36 +200,11 @@ function drawFile(file) {
 }
 
 
-function draw(message) {
-  var results = message.results;
-  var height = Math.ceil(results.length / canvas.width);
-  var width = canvas.width;
+function draw(image) {
+  canvas.width = image.width;
+  canvas.height = image.height;
 
-  var offscreenCanvas = document.createElement('canvas');
-  offscreenCanvas.width = width;
-  offscreenCanvas.height = height;
-  var offctx = offscreenCanvas.getContext('2d');
-
-  for (var i = 0, y = 0; y <= height; ++y) {
-    for (var x = 0; x < width; ++x) {
-      offctx.fillStyle = results[i];
-      offctx.fillRect(x, y, 1, 1);
-      ++i;
-    }
-  }
-  canvas.width = offscreenCanvas.width;
-  canvas.height = offscreenCanvas.height;
-
-  ctx.drawImage(offscreenCanvas, 0, 0);
-  /*
-  var flatten = message.results.flat();
-  for (var i = 0, m = 4 - flatten.length % 4; i <= m; ++i) {
-    flatten.push([0, 0, 0, 0]);
-  }
-  var clamped = Uint8ClampedArray.from(flatten);
-  var image = new ImageData(clamped, canvas.width);
   ctx.putImageData(image, 0, 0);
-  */
 }
 
 /*
