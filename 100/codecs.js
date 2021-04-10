@@ -73,14 +73,12 @@ registerCodec('pixelheader', function (message, target) {
       height = image.height,
       data = image.data;
   var length = data.length;
-  console.log('[WORKER] data:', data);
 
   var header;
   var offset = 0;
   do {
     header = (data[offset] << 16) | (data[offset+1] << 8) | data[offset+2];
     offset += 4;
-    console.log('[WORKER] header:', header);
 
     for (var i = 0; i < header; ++i) {
       bytes.push(data[offset + i]);
@@ -88,10 +86,13 @@ registerCodec('pixelheader', function (message, target) {
         bytes.pop();
         ++header;
       }
+      target.postMessage({
+        type: 'progress',
+        percentage: Math.floor((offset + i) / length * 100),
+      });
     }
     offset += header * 3;
   } while (offset < length);
-  console.log('[WORKER] bytes:', bytes);
 
   var url = bytesToURL(bytes);
   target.postMessage({
