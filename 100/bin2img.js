@@ -12,6 +12,11 @@ var cancelBtn = document.getElementById('cancel');
 var file;
 
 window.onload = function (event) {
+  ctx.mozImageSmoothingEnabled = false;
+  ctx.webkitImageSmoothingEnabled = false;
+  ctx.msImageSmoothingEnabled = false;
+  ctx.imageSmoothingEnabled = false;
+
   var hash = location.hash;
   var matches = /([a-z_-][a-z0-9_-]+)=([^=]*)/gi.exec(hash) || [];
   var parameters = new Map();
@@ -117,6 +122,11 @@ function unlockUI() {
 
 function getMode() {
   return document.querySelector('input[name="mode"]:checked').value;
+}
+
+
+function getMethod() {
+  return document.getElementById('method').value;
 }
 
 
@@ -259,7 +269,7 @@ function decodeFile(file) {
             unlockUI();
             cancelBtn.setAttribute('disabled', 'disabled');
 
-            downloadURL(message.url, file.name + '_bin2img.bin');
+            downloadURL(message.url, file.name + '.bin2img.bin');
             break;
           default:
             break;
@@ -308,7 +318,7 @@ global.clickDownload = function () {
 
 function downloadCanvas() {
   var dataURL = canvas.toDataURL('image/png');
-  downloadURL(dataURL, file.name + '_bin2img.png');
+  downloadURL(dataURL, file.name + '.bin2img.png');
 }
 
 

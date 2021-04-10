@@ -1,3 +1,28 @@
+function arrayToImageData(array, width) {
+  var transparentBlack = Array(4).fill(0);
+
+  var flatten = array.flat();
+  var length = flatten.length;
+
+  // Padding
+  for (var i = 0, m = width*4 - (length % (width*4)); i < m; ++i) {
+    flatten.push(transparentBlack);
+  }
+  var clamped = Uint8ClampedArray.from(flatten);
+  return new ImageData(clamped, width);
+}
+
+
+function bytesToURL(bytes) {
+  var array = new Uint8Array(bytes.length);
+  bytes.forEach(function (byte, i) {
+    array[i] = byte;
+  });
+  var blob = new Blob([array.buffer]);
+  return URL.createObjectURL(blob);
+}
+
+
 registerCodec('eob', function (message, target) {
   var array = message.data;
   var width = message.width;
@@ -43,19 +68,10 @@ registerCodec('eob', function (message, target) {
     });
     results.push(fill);
   }
-  var transparentBlack = Array(4).fill(0);
-  results.push(transparentBlack);
+  results.push([0, 0, 0, 0]);
 
-  var flatten = results.flat();
-  var length = flatten.length;
-
-  // Padding
-  for (var i = 0, m = width*4 - (length % (width*4)); i < m; ++i) {
-    flatten.push(transparentBlack);
-  }
-  var clamped = Uint8ClampedArray.from(flatten);
-  var image = new ImageData(clamped, width);
-
+  var image = arrayToImageData(results, width);
+  console.log('[WORKER] image:', image);
   target.postMessage({
     type: 'done',
     image: image,
@@ -96,17 +112,72 @@ registerCodec('eob', function (message, target) {
     }
   }
 
-  var array = new Uint8Array(bytes.length);
-  bytes.forEach(function (byte, i) {
-    array[i] = byte;
-  });
-  var blob = new Blob([array.buffer]);
-  console.log('blob:', blob);
-  // var blob = new Blob([array.buffer], {type: 'application/octet-stream'});
-  var url = URL.createObjectURL(blob);
-
+  var url = bytesToURL(bytes);
   target.postMessage({
     type: 'done',
     url: url,
   });
 });
+
+/*
+registerCodec('pixelheader', function (message, target) {
+  var MAXSIZE = 0xffffffff;
+
+  var width = message.width;
+  var array = message.data;
+  var length = array.length;
+
+  console.log('[WORKER] array:', array);
+
+  var results = [];
+  for (var i = 0; i < length; i += MAXSIZE) {
+    var remain = (length - i*MAXSIZE) % MAXSIZE || MAXSIZE;
+    results.push([
+      (remain & (0xff<<24)) >>> 24,
+      (remain & (0xff<<16)) >>> 16,
+      (remain & (0xff<<8)) >>> 8,
+      (remain & (0xff)),
+    ]);
+    for (var j = 0; j < remain; j += 4) {
+      var r = array[i+j],
+          g = array[i+j + 1],
+          b = array[i+j + 2],
+          a = array[i+j + 3];
+      results.push([r || 0, g || 0, b || 0, a || 0]);
+
+      target.postMessage({
+        type: 'progress',
+        percentage: Math.floor((i+j) / length * 100),
+      });
+    }
+  }
+
+  var image = arrayToImageData(results, width);
+  console.log('[WORKER] image:', image);
+  target.postMessage({
+    type: 'done',
+    image: image,
+  });
+
+}, function (message, target) {
+  var bytes = [];
+  var image = message.image;
+  var width = image.width,
+      height = image.height,
+      data = image.data;
+  var length = data.length;
+  console.log('[WORKER] data:', data);
+
+  var header = (data[0] << 24) | (data[1] << 16) | (data[2] << 8) | data[3];
+  for (var i = 4; i < header; ++i) {
+    bytes.push(data[i]);
+  }
+  console.log('[WORKER] bytes:', bytes);
+
+  var url = bytesToURL(bytes);
+  target.postMessage({
+    type: 'done',
+    url: url,
+  });
+});
+*/
