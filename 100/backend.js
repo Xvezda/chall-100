@@ -1,3 +1,6 @@
+importScripts('lib.js');
+
+
 var codecs = new Map();
 
 function getCodec(name) {
